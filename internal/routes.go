@@ -189,32 +189,6 @@ func registerNew(c framework.Context) error {
 	return c.String(http.StatusFound, "Found")
 }
 
-func changePaidStatus(c framework.Context) error {
-	id := c.Param("id")
-
-	model := Account{
-		ID: id,
-	}
-	var result Account
-
-	res := db.Model(&model).Updates(map[string]interface{}{"Paid": gorm.Expr("NOT paid"), "TimesReceived": 0}).First(&result)
-
-	if res.Error != nil {
-		log.Error(res.Error)
-		return c.JSON(http.StatusInternalServerError, internalServerErrorMessage)
-	}
-
-	log.WithFields(log.Fields{
-		"ID":         id,
-		"paidStatus": result.Paid,
-	}).Infoln("Changed payment status")
-
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"id":   id,
-		"paid": result.Paid,
-	})
-}
-
 func sendAnnouncement(c framework.Context) error {
 	subject := c.FormValue("subject")
 	text := c.FormValue("text")

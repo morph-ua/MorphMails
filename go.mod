@@ -1,4 +1,4 @@
-module github.com/AtomicEmails/art-module
+module github.com/AtomicEmails/AtomicEmails
 
 go 1.20
 

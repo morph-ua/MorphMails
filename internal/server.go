@@ -129,7 +129,6 @@ func main() {
 	api.GET("/delete/:id/:email", delSome)
 	api.GET("/reset/:id", delAll)
 	api.GET("/list/:id", listAll)
-	api.GET("/paid/:id", changePaidStatus)
 
 	system := e.Group("/sys")
 
