@@ -63,7 +63,7 @@ changelog:
 
 dockers:
   - image_templates:
-      - "ghcr.io/AtomicEmails/app:{{ .Tag }}-amd64"
+      - "ghcr.io/atomicemails/app:{{ .Tag }}-amd64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -79,7 +79,7 @@ dockers:
       - "--label=org.opencontainers.image.source={{.GitURL}}"
       - "--platform=linux/amd64"
   - image_templates:
-      - "ghcr.io/AtomicEmails/app:{{ .Tag }}-arm64"
+      - "ghcr.io/atomicemails/app:{{ .Tag }}-arm64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
