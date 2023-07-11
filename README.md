@@ -45,7 +45,7 @@ Using Docker:
 $ docker run \
     -e DATABASE_URL=<your_db_url> \ 
     -e SECRET_KEY=<global_service_key_to_parse_emails> \
-    -e PORT=8080 -p 8080:8080 -d ghcr.io/AtomicEmails/app:latest
+    -e PORT=8080 -p 8080:8080 -d ghcr.io/atomicemails/app:latest
 ```
 
 - Next steps from [Network Setup](#network-setup) section.
