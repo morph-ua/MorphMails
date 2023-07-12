@@ -1,4 +1,4 @@
-# Atomic Emails 📬
+# Atomic Emails ⚛️
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
@@ -105,8 +105,8 @@ Contributions are welcome! Please read the
 [contribution guidelines](CONTRIBUTING.md) and [code of conduct](CODE_OF_CONDUCT.md) first.
 
 ## License
-This project is licensed under the Attribution-NonCommercial 4.0 International License — see the
-[BY-NC.md](by-nc.md) file for details.
+This project is licensed under the Creative Commons Zero v1.0 Universal License — see the
+[LICENSE.md](LICENSE.md) file for details.
 
 ## Credits
 - [voxelin 🇺🇦](https://github.com/voxelin) - The creator of this project.
