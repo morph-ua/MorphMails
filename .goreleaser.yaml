@@ -63,6 +63,7 @@ changelog:
 
 dockers:
   - image_templates:
+      - "ghcr.io/atomicemails/app:latest"
       - "ghcr.io/atomicemails/app:{{ .Tag }}-amd64"
     dockerfile: Dockerfile
     use: buildx
