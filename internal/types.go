@@ -1,17 +1,24 @@
 package main
 
 import (
+	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"gorm.io/datatypes"
 	"time"
 )
 
+type Destination struct {
+	ID     string
+	Client string
+}
+
 type Account struct {
-	ID            string         `json:"id" gorm:"not null"`
-	Emails        pq.StringArray `json:"emails" gorm:"index;type:text[]"`
-	Forward       bool           `json:"forward" gorm:"default:true"`
-	Paid          bool           `json:"paid" gorm:"default:false;not null"`
-	Clients       pq.StringArray `json:"clients" gorm:"not null;type:text[];default:'{telegram}'"`
-	TimesReceived int            `json:"timesReceived" gorm:"default:0;not null"`
+	UUID          uuid.UUID                       `json:"uuid" gorm:"type:uuid;default:uuid_generate_v4()"`
+	Destination   datatypes.JSONType[Destination] `json:"destination" gorm:"not null"`
+	Emails        pq.StringArray                  `json:"emails" gorm:"index;type:text[]"`
+	Forward       bool                            `json:"forward" gorm:"default:true"`
+	Paid          bool                            `json:"paid" gorm:"default:false;not null"`
+	TimesReceived int                             `json:"timesReceived" gorm:"default:0;not null"`
 }
 
 type Letter struct {
