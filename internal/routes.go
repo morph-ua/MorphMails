@@ -12,11 +12,58 @@ import (
 	"strconv"
 )
 
+func registerNew(c framework.Context) error {
+	id := c.Param("id")
+	clientID := c.Get("client").(string)
+
+	var account Account
+	a := `[ { "id": ` + strconv.Quote(id) + ` } ]`
+	resp := db.Where("destination @> ?", a).Find(&account)
+
+	if errors.Is(resp.Error, gorm.ErrRecordNotFound) {
+		created := &Account{
+			Destination: []Destination{{
+				ID:     id,
+				Client: clientID,
+			}},
+		}
+
+		res := db.Create(created)
+
+		if res.Error != nil {
+			log.Error(res.Error)
+			return c.JSON(http.StatusInternalServerError, internalServerErrorMessage)
+		}
+
+		log.WithFields(log.Fields{
+			"userID": id,
+			"client": clientID,
+		}).Infoln("New user registered in the bot")
+
+		return c.JSON(http.StatusOK, created)
+	}
+
+	if !slices.Contains(account.Destination, Destination{ID: id, Client: clientID}) {
+		account.Destination = append(account.Destination, Destination{ID: id, Client: clientID})
+		db.Model(&account).Updates(Account{Destination: account.Destination})
+
+		log.WithFields(log.Fields{
+			"userID": id,
+			"client": clientID,
+		}).Infoln("Client connected to an account")
+
+		return c.String(http.StatusOK, "OK")
+	}
+
+	return c.String(http.StatusFound, "Found")
+}
+
 func assignNew(c framework.Context) error {
 	id := c.Param("id")
 
 	var result Account
-	db.Where(&Account{ID: id}).First(&result)
+	a := `[ { "id": ` + strconv.Quote(id) + ` } ]`
+	db.Where("destination @> ?", a).Find(&result).First(&result)
 
 	_, err := strconv.Atoi(id)
 	if len(id) == 0 || err != nil {
@@ -33,7 +80,7 @@ loop:
 		}
 	}
 
-	res := db.Model(&Account{}).Where(&Account{ID: id}).Update("emails", gorm.Expr("emails || ?", pq.StringArray{generated}))
+	res := db.Model(&Account{}).Where("destination @> ?", a).Update("emails", gorm.Expr("emails || ?", pq.StringArray{generated}))
 
 	if res.Error != nil {
 		log.WithFields(log.Fields{
@@ -57,7 +104,8 @@ loop:
 func delAll(c framework.Context) error {
 	id := c.Param("id")
 
-	response := db.Where(&Account{ID: id})
+	a := `[ { "id": ` + strconv.Quote(id) + ` } ]`
+	response := db.Where("destination @> ?", a)
 
 	if errors.Is(response.Error, gorm.ErrRecordNotFound) {
 		return c.JSON(http.StatusNotFound, &HttpError{
@@ -66,7 +114,7 @@ func delAll(c framework.Context) error {
 		})
 	}
 
-	db.Model(&Account{}).Where(&Account{ID: id}).Update("emails", pq.StringArray{id + "@decline.live"})
+	db.Model(&Account{}).Where("destination @> ?", a).Update("emails", nil)
 
 	log.WithFields(log.Fields{
 		"id": id,
@@ -79,22 +127,16 @@ func delSome(c framework.Context) error {
 	id := c.Param("id")
 
 	var result Account
-	response := db.Where(&Account{ID: id}).First(&result)
+	a := `[ { "id": ` + strconv.Quote(id) + ` } ]`
+	response := db.Where("destination @> ?", a).Find(&result)
 
 	email := c.Param("email")
-
-	if len(email) == 0 || email == result.ID+"@decline.live" {
-		return c.JSON(http.StatusBadRequest, &HttpError{
-			Status:  http.StatusBadRequest,
-			Message: "You can not delete your persistent email address",
-		})
-	}
 
 	if errors.Is(response.Error, gorm.ErrRecordNotFound) {
 		return c.JSON(http.StatusNotFound, notFoundMessage)
 	}
 
-	res := db.Model(&Account{}).Where(&Account{ID: id}).Update("emails", gorm.Expr("ARRAY_REMOVE(emails, ?)", email))
+	res := db.Model(&Account{}).Where("destination @> ?", a).Update("emails", gorm.Expr("ARRAY_REMOVE(emails, ?)", email))
 
 	if res.Error != nil {
 		log.Error(res.Error)
@@ -113,20 +155,22 @@ func listAll(c framework.Context) error {
 	id := c.Param("id")
 
 	var result Account
-	response := db.Where(&Account{ID: id}).Find(&result)
+	a := `[ { "id": ` + strconv.Quote(id) + ` } ]`
+	response := db.Where("destination @> ?", a).Select("emails").First(&result)
 
 	if errors.Is(response.Error, gorm.ErrRecordNotFound) {
 		return c.JSON(http.StatusNotFound, notFoundMessage)
 	}
 
-	return c.JSON(http.StatusOK, result)
+	return c.JSON(http.StatusOK, map[string]interface{}{"emails": result.Emails})
 }
 
 func turnFwd(c framework.Context) error {
 	id := c.Param("id")
 
 	var result Account
-	tx := db.Model(&Account{}).Where(&Account{ID: id}).Update("forward", gorm.Expr("NOT forward")).Select("forward").First(&result)
+	a := `[ { "id": ` + strconv.Quote(id) + ` } ]`
+	tx := db.Model(&Account{}).Where("destination @> ?", a).Update("forward", gorm.Expr("NOT forward")).Select("forward").First(&result)
 
 	if tx.Error != nil {
 		return c.JSON(http.StatusInternalServerError, &HttpError{
@@ -146,49 +190,6 @@ func turnFwd(c framework.Context) error {
 	})
 }
 
-func registerNew(c framework.Context) error {
-	id := c.Param("id")
-	clientID := c.Get("client").(string)
-
-	var result Account
-	resp := db.Where("id = ?", id).Select("clients").First(&result)
-
-	if errors.Is(resp.Error, gorm.ErrRecordNotFound) {
-		created := &Account{
-			ID:      id,
-			Emails:  pq.StringArray{id + "@decline.live"},
-			Clients: pq.StringArray{clientID},
-		}
-
-		res := db.Create(created)
-
-		if res.Error != nil {
-			log.Error(res.Error)
-			return c.JSON(http.StatusInternalServerError, internalServerErrorMessage)
-		}
-
-		log.WithFields(log.Fields{
-			"userID": id,
-			"client": clientID,
-		}).Infoln("New user registered in the bot")
-
-		return c.JSON(http.StatusOK, created)
-	}
-
-	if !slices.Contains(result.Clients, clientID) {
-		db.Model(&Account{}).Where("id = ?", id).Update("clients", gorm.Expr("clients || ?", pq.StringArray{clientID}))
-
-		log.WithFields(log.Fields{
-			"userID": id,
-			"client": clientID,
-		}).Infoln("Client connected to an account")
-
-		return c.String(http.StatusOK, "OK")
-	}
-
-	return c.String(http.StatusFound, "Found")
-}
-
 func sendAnnouncement(c framework.Context) error {
 	subject := c.FormValue("subject")
 	text := c.FormValue("text")
@@ -203,18 +204,18 @@ func sendAnnouncement(c framework.Context) error {
 		url = "https://www.decline.live"
 	}
 
-	var result []Account
-	db.Select("id", "clients").Find(&result)
+	var accounts []Account
+	db.Select("destination").Find(&accounts)
 
-	for _, account := range result {
-		finalRes := FinalResult{
-			Message:     fmt.Sprintf(messageTemplate, "news@atomic.decline.live", account.ID+"@decline.live", subject, text),
-			RenderedURI: url,
-			ID:          account.ID,
-		}
+	for _, account := range accounts {
+		for _, destination := range account.Destination {
+			finalRes := FinalResult{
+				Message:     fmt.Sprintf(messageTemplate, "hello@lowt.live", "news_receiver@decline.live", subject, text),
+				RenderedURI: url,
+				ID:          destination.ID,
+			}
 
-		for _, clientID := range account.Clients {
-			client := getClient(clientID)
+			client := getClient(destination.Client)
 			if len(client) == 0 {
 				return c.String(http.StatusNotFound, "Client wasn't found in DB")
 			}

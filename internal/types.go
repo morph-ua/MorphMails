@@ -8,17 +8,17 @@ import (
 )
 
 type Destination struct {
-	ID     string
-	Client string
+	ID     string `json:"id"`
+	Client string `json:"client"`
 }
 
 type Account struct {
-	UUID          uuid.UUID                       `json:"uuid" gorm:"type:uuid;default:uuid_generate_v4()"`
-	Destination   datatypes.JSONType[Destination] `json:"destination" gorm:"not null"`
-	Emails        pq.StringArray                  `json:"emails" gorm:"index;type:text[]"`
-	Forward       bool                            `json:"forward" gorm:"default:true"`
-	Paid          bool                            `json:"paid" gorm:"default:false;not null"`
-	TimesReceived int                             `json:"timesReceived" gorm:"default:0;not null"`
+	ID            uuid.UUID                        `json:"id" gorm:"type:uuid;default:uuid_generate_v4()"`
+	Destination   datatypes.JSONSlice[Destination] `json:"destination" gorm:"index;not null;type:json"`
+	Emails        pq.StringArray                   `json:"emails" gorm:"index;type:text[]"`
+	Forward       bool                             `json:"forward" gorm:"default:true"`
+	Paid          bool                             `json:"paid" gorm:"default:false;not null"`
+	TimesReceived int                              `json:"timesReceived" gorm:"default:0;not null"`
 }
 
 type Letter struct {

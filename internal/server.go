@@ -57,7 +57,7 @@ func runCronJob(DB *gorm.DB) {
 	s.StartAsync()
 }
 
-func CheckV2Auth(next framework.HandlerFunc) framework.HandlerFunc {
+func checkV2Auth(next framework.HandlerFunc) framework.HandlerFunc {
 	return func(c framework.Context) error {
 		token := c.QueryParam("token")
 		var result Client
@@ -71,7 +71,7 @@ func CheckV2Auth(next framework.HandlerFunc) framework.HandlerFunc {
 	}
 }
 
-func CheckSystemAuth(next framework.HandlerFunc) framework.HandlerFunc {
+func checkSystemAuth(next framework.HandlerFunc) framework.HandlerFunc {
 	return func(c framework.Context) error {
 		token := c.QueryParam("token")
 		if token != osSecret {
@@ -123,7 +123,7 @@ func main() {
 
 	api := e.Group("/v2")
 
-	api.Use(CheckV2Auth)
+	api.Use(checkV2Auth)
 
 	api.GET("/register/:id", registerNew)
 	api.GET("/assign/:id", assignNew)
@@ -134,7 +134,7 @@ func main() {
 
 	system := e.Group("/sys")
 
-	system.Use(CheckSystemAuth)
+	system.Use(checkSystemAuth)
 
 	system.POST("/parse", ParseAndSend)
 	system.POST("/announcement", sendAnnouncement)

@@ -44,7 +44,7 @@ func ParseAndSend(c framework.Context) error {
 		}
 
 		var account Account
-		result := db.Select("id", "forward", "paid", "times_received", "clients").Where("? = ANY(emails)", strings.ToLower(recipient)).First(&account)
+		result := db.Select("forward", "paid", "times_received", "destination").Where("? = ANY(emails)", strings.ToLower(recipient)).First(&account)
 
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			continue
@@ -79,7 +79,7 @@ func ParseAndSend(c framework.Context) error {
 						})
 					}
 					var result CDNResponse
-					_, err = reqClient.R().
+					_, err = req.R().
 						SetFileBytes("file", file.Filename, fileRead).
 						SetHeader("Accept", "application/json").
 						SetSuccessResult(&result).
@@ -94,25 +94,29 @@ func ParseAndSend(c framework.Context) error {
 					files = append(files, result.Message)
 				}
 			}
-			finalRes := FinalResult{
-				Message:     fmt.Sprintf(messageTemplate, from, rawRecipient, subject, text),
-				RenderedURI: htmlRendered,
-				ID:          account.ID,
-				Files:       files,
-			}
 
 			log.WithFields(log.Fields{
 				"recipients":    recipients,
 				"ID":            account.ID,
-				"clients":       account.Clients,
 				"subject":       subject,
 				"renderedEmail": htmlRendered,
 			}).Infoln("Successfully parsed an email")
 
-			for _, client := range account.Clients {
-				_ = syncWithClients(finalRes, client, c)
+			for _, destination := range account.Destination {
+				finalRes := FinalResult{
+					Message:     fmt.Sprintf(messageTemplate, from, rawRecipient, subject, text),
+					RenderedURI: htmlRendered,
+					ID:          destination.ID,
+					Files:       files,
+				}
+				destination := destination
+
+				go func() {
+					_ = syncWithClients(finalRes, destination.Client)
+				}()
 			}
-			return c.String(http.StatusOK, "OK")
+
+			return c.String(http.StatusOK, http.StatusText(http.StatusOK))
 		}
 	}
 	return c.JSON(http.StatusBadRequest, badRequestMessage)

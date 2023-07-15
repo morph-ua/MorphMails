@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -40,21 +39,21 @@ func connect() *gorm.DB {
 	return tx
 }
 
-func syncWithClients(json FinalResult, id string, c echo.Context) error {
+func syncWithClients(json FinalResult, id string) int {
 	client := getClient(id)
 	if len(client) == 0 {
-		return c.String(http.StatusNotFound, "Client wasn't found in DB")
+		return http.StatusBadRequest
 	}
 
-	_, err := req.R().
+	r, err := req.R().
 		SetHeader("Content-type", "application/json").
 		SetBodyJsonMarshal(json).
 		SetHeader("user-agent", "github.com/voxelin").
 		Post(client)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, badRequestMessage)
+		return http.StatusInternalServerError
 	}
 
-	return c.String(http.StatusOK, "OK")
+	return r.StatusCode
 }
