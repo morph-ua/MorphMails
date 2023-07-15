@@ -37,9 +37,9 @@ type ClientDTO struct {
 }
 
 type FinalResult struct {
+	ID          string   `json:"id"`
 	Message     string   `json:"message"`
 	RenderedURI string   `json:"renderedURI"`
-	ID          string   `json:"id"`
 	Files       []string `json:"files"`
 }
 

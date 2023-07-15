@@ -37,7 +37,7 @@ loop:
 
 	if res.Error != nil {
 		log.WithFields(log.Fields{
-			"error": res.Error.Error(),
+			"error": res.Error,
 		}).Errorln("Caught an error while pushing assigned email to a DB")
 
 		return c.JSON(http.StatusBadRequest, badRequestMessage)
@@ -208,7 +208,7 @@ func sendAnnouncement(c framework.Context) error {
 
 	for _, account := range result {
 		finalRes := FinalResult{
-			Message:     fmt.Sprintf(paidMessageTemplate, "news@atomic.decline.live", account.ID+"@decline.live", subject, text),
+			Message:     fmt.Sprintf(messageTemplate, "news@atomic.decline.live", account.ID+"@decline.live", subject, text),
 			RenderedURI: url,
 			ID:          account.ID,
 		}
@@ -219,7 +219,7 @@ func sendAnnouncement(c framework.Context) error {
 				return c.String(http.StatusNotFound, "Client wasn't found in DB")
 			}
 
-			_, err := reqClient.R().
+			_, err := req.R().
 				SetHeader("Content-type", "application/json").
 				SetBodyJsonMarshal(finalRes).
 				SetHeader("user-agent", "github.com/voxelin").

@@ -21,15 +21,7 @@ func randSeq(n int) string {
 	return string(s)
 }
 
-func unwrapDB() *gorm.DB {
-	if len(osDB) == 0 {
-		log.WithFields(log.Fields{
-			"fatal":    true,
-			"function": "unwrapDB",
-			"file":     "functions.go",
-		}).Fatalln("Program failed to initialise. Required environment variables not found: `BOT_TOKEN`, `DATABASE_URL`")
-	}
-
+func connect() *gorm.DB {
 	db, err := gorm.Open(postgres.Open(osDB), &gorm.Config{
 		Logger:      logger.Default.LogMode(logger.Silent),
 		PrepareStmt: true,
@@ -38,9 +30,8 @@ func unwrapDB() *gorm.DB {
 	if err != nil {
 		log.WithFields(log.Fields{
 			"fatal":    true,
-			"function": "unwrapDB",
-			"file":     "functions.go",
-			"error":    err.Error(),
+			"function": "connect",
+			"error":    err,
 		}).Fatalln("Database connection aborted")
 	}
 
@@ -55,7 +46,7 @@ func syncWithClients(json FinalResult, id string, c echo.Context) error {
 		return c.String(http.StatusNotFound, "Client wasn't found in DB")
 	}
 
-	_, err := reqClient.R().
+	_, err := req.R().
 		SetHeader("Content-type", "application/json").
 		SetBodyJsonMarshal(json).
 		SetHeader("user-agent", "github.com/voxelin").

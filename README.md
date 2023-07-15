@@ -1,4 +1,5 @@
 # Atomic Emails ⚛️
+
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
@@ -21,9 +22,9 @@ You can create a temporary email address by using the `/v2/assign` route or equi
 incoming emails to your client.
 
 ### Persistent email address
-One persistent email address is created for each ID (Chat identificator in your client). You can use this email
-address to receive emails from friends and family instead of using your main
-email address. The service will parse and forward all incoming emails to your client.
+One persistent email address is created for each ID (Unique chat identification number in your client).
+You can use this email address to receive emails from friends and family instead of using your main  email address.
+The service will parse and forward all incoming emails to your client.
 
 ### Connect your own domain
 You can connect your own domain to the service by placing it on your own hosting to prevent the service from being blocked
@@ -45,7 +46,7 @@ Using Docker:
 $ docker run \
     -e DATABASE_URL=<your_db_url> \ 
     -e SECRET_KEY=<global_service_key_to_parse_emails> \
-    -e PORT=8080 -p 8080:8080 -d ghcr.io/atomicemails/app:latest
+    -p 8080:8080 -d ghcr.io/atomicemails/app:latest
 ```
 
 - Next steps from [Network Setup](#network-setup) section.
@@ -56,10 +57,7 @@ Using Binaries:
 - Run the following command:
 
 ```bash
-$ DATABASE_URL=<your_db_url> \
-    SECRET_KEY=<global_service_key_to_parse_emails> \
-    PORT=8080 \
-    ./AtomicEmails
+$ DATABASE_URL=<your_db_url> SECRET_KEY=<global_service_key_to_parse_emails> ./AtomicEmails
 ```
 
 - Next steps from [Network Setup](#network-setup) section.

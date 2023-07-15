@@ -17,19 +17,14 @@ import (
 )
 
 var osSecret = os.Getenv("SECRET_KEY")
-var db = unwrapDB()
 var osDB = os.Getenv("DATABASE_URL")
-var reqClient = request.C()
-
-func init() {
-	log.SetFormatter(&log.TextFormatter{ForceColors: true, FullTimestamp: true, TimestampFormat: time.RFC822})
-	log.SetOutput(os.Stdout)
-}
+var osPort = os.Getenv("PORT")
+var db *gorm.DB
+var req *request.Client
 
 func timesReceivedNullification(DB *gorm.DB) {
 	log.WithFields(log.Fields{
 		"function": "timesReceivedNullification",
-		"file":     "server.go",
 	}).Infoln("Running a TimesReceived nullification cronjob")
 	DB.Model(&Account{}).Where("paid = ?", false).Update("times_received", 0)
 }
@@ -37,7 +32,6 @@ func timesReceivedNullification(DB *gorm.DB) {
 func letterNullification(DB *gorm.DB) {
 	log.WithFields(log.Fields{
 		"function": "letterNullification",
-		"file":     "server.go",
 	}).Infoln("Running a letter nullification cronjob")
 	DB.Where("created_at < ?", time.Now().UTC().Add(-1*24*time.Duration(7)*time.Hour)).Delete(&Letter{})
 }
@@ -48,17 +42,15 @@ func runCronJob(DB *gorm.DB) {
 		log.WithFields(log.Fields{
 			"fatal":    true,
 			"function": "runCronJob",
-			"file":     "server.go",
-			"error":    err.Error(),
+			"error":    err,
 		}).Fatalln("timesReceivedNullification CronJob failed to initialise")
 	}
 
-	if _, err := s.Every(7).Days().At("00:00").Do(letterNullification, DB); err != nil {
+	if _, err := s.Every(3).Days().At("00:00").Do(letterNullification, DB); err != nil {
 		log.WithFields(log.Fields{
 			"fatal":    true,
 			"function": "runCronJob",
-			"file":     "server.go",
-			"error":    err.Error(),
+			"error":    err,
 		}).Fatalln("letterNullification CronJob failed to initialise")
 	}
 
@@ -90,27 +82,37 @@ func CheckSystemAuth(next framework.HandlerFunc) framework.HandlerFunc {
 	}
 }
 
-func main() {
-	if len(osSecret) == 0 {
+func init() {
+	log.SetFormatter(&log.TextFormatter{ForceColors: true, FullTimestamp: true, TimestampFormat: time.RFC822})
+	log.SetOutput(os.Stdout)
+
+	if len(osSecret) == 0 || len(osDB) == 0 {
 		log.WithFields(log.Fields{
 			"fatal":    true,
-			"function": "main",
-			"file":     "server.go",
+			"function": "init",
 		}).Fatalln("Program failed to initialise. Required environment variables not found: `SECRET_KEY`, `DATABASE_URL`")
 	}
+
+	db = connect()
+	req = request.C()
 
 	if err := db.AutoMigrate(&Account{}, &Letter{}, &Client{}); err != nil {
 		log.WithFields(log.Fields{
 			"fatal":    true,
-			"function": "main",
-			"file":     "server.go",
-			"error":    err.Error(),
-		}).Fatalln("Database failed to migrate")
+			"function": "init",
+			"error":    err,
+		}).Fatalln("Database migration was unsuccessful")
 	}
 
+	if len(osPort) == 0 {
+		osPort = "8080"
+	}
+}
+
+func main() {
 	e := framework.New()
 	e.HideBanner = true
-	fmt.Print(banner)
+	fmt.Println("Atomic Emails --> Helium V2")
 
 	runCronJob(db)
 
@@ -143,7 +145,7 @@ func main() {
 	e.GET("/clients", fetchClients)
 
 	go func() {
-		if err := e.Start(":" + os.Getenv("PORT")); err != nil && err != http.ErrServerClosed {
+		if err := e.Start(":" + osPort); err != nil && err != http.ErrServerClosed {
 			log.Infoln("Shutting down the server")
 		}
 	}()
