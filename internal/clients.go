@@ -9,7 +9,7 @@ import (
 )
 
 func createClient(context framework.Context) error {
-	c := new(ClientDTO)
+	c := new(Client)
 
 	if err := context.Bind(c); err != nil {
 		return context.String(http.StatusBadRequest, "Bad Request")
