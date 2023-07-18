@@ -1,11 +1,12 @@
 package main
 
 import (
-	"errors"
+	"context"
+	"entgo.io/ent/dialect/sql"
 	"fmt"
 	framework "github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
+	"helium/ent"
 	"io"
 	"net/http"
 	"regexp"
@@ -43,14 +44,21 @@ func ParseAndSend(c framework.Context) error {
 			recipient = strings.Split(split[0], "+")[0] + "@" + split[1]
 		}
 
-		var account Account
-		result := db.Select("forward", "paid", "times_received", "destination").Where("? = ANY(emails)", strings.ToLower(recipient)).First(&account)
+		user, err := db.User.Query().
+			Select("forward", "paid", "counter", "receivers").
+			Where(func(selector *sql.Selector) {
+				selector.Where(sql.Contains("emails", recipient))
+			}).
+			WithReceivers(func(query *ent.ReceiverQuery) {
+				query.WithConnector()
+			}).
+			First(context.Background())
 
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		if err != nil {
 			continue
 		}
 
-		if account.Forward {
+		if user.Forward {
 			htmlRendered := "https://www.decline.live/preview/" + uploadHTML(html, from, rawRecipient)
 
 			count, _ := strconv.Atoi(atc)
@@ -97,22 +105,22 @@ func ParseAndSend(c framework.Context) error {
 
 			log.WithFields(log.Fields{
 				"recipients":    recipients,
-				"ID":            account.ID,
+				"ID":            user.ID,
 				"subject":       subject,
 				"renderedEmail": htmlRendered,
 			}).Infoln("Successfully parsed an email")
 
-			for _, destination := range account.Destination {
+			for _, receiver := range user.Edges.Receivers {
 				finalRes := FinalResult{
 					Message:     fmt.Sprintf(messageTemplate, from, rawRecipient, subject, text),
 					RenderedURI: htmlRendered,
-					ID:          destination.ID,
+					ID:          receiver.ID,
 					Files:       files,
 				}
-				destination := destination
 
+				receiver := receiver
 				go func() {
-					_ = syncWithClients(finalRes, destination.Client)
+					_ = syncWithClients(finalRes, receiver.Edges.Connector.URL)
 				}()
 			}
 

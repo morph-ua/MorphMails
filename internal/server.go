@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	cron "github.com/go-co-op/gocron"
 	request "github.com/imroc/req/v3"
 	framework "github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
+	"helium/ent"
+	"helium/ent/connector"
+	"helium/ent/letter"
+	"helium/ent/user"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,37 +21,49 @@ import (
 var osSecret = os.Getenv("SECRET_KEY")
 var osDB = os.Getenv("DATABASE_URL")
 var osPort = os.Getenv("PORT")
-var db *gorm.DB
+var db *ent.Client
 var req *request.Client
 
-func timesReceivedNullification(DB *gorm.DB) {
+func timesReceivedNullification() {
 	log.WithFields(log.Fields{
 		"function": "timesReceivedNullification",
 	}).Infoln("Running a TimesReceived nullification cronjob")
-	DB.Model(&Account{}).Where("paid = ?", false).Update("times_received", 0)
+	_, err := db.User.Update().Where(user.Paid(false)).SetCounter(0).Save(context.Background())
+	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "timesReceivedNullification",
+			"error":    err,
+		}).Fatalln("Failed to execute timesReceivedNullification")
+	}
 }
 
-func letterNullification(DB *gorm.DB) {
+func letterNullification() {
 	log.WithFields(log.Fields{
 		"function": "letterNullification",
 	}).Infoln("Running a letter nullification cronjob")
-	DB.Where("created_at < ?", time.Now().UTC().Add(-1*24*time.Duration(7)*time.Hour)).Delete(&Letter{})
+	_, err := db.Letter.Delete().Where(letter.CreatedAtLT(time.Now().AddDate(0, 0, -3))).Exec(context.Background())
+	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "letterNullification",
+			"error":    err,
+		}).Fatalln("Failed to execute letterNullification")
+	}
 }
 
-func runCronJob(DB *gorm.DB) {
+func runCronjobs() {
 	s := cron.NewScheduler(time.UTC)
-	if _, err := s.Every(1).Day().At("00:00").Do(timesReceivedNullification, DB); err != nil {
+	if _, err := s.Every(1).Day().At("00:00").Do(timesReceivedNullification); err != nil {
 		log.WithFields(log.Fields{
 			"fatal":    true,
-			"function": "runCronJob",
+			"function": "runCronjobs",
 			"error":    err,
 		}).Fatalln("timesReceivedNullification CronJob failed to initialise")
 	}
 
-	if _, err := s.Every(3).Days().At("00:00").Do(letterNullification, DB); err != nil {
+	if _, err := s.Every(3).Days().At("00:00").Do(letterNullification); err != nil {
 		log.WithFields(log.Fields{
 			"fatal":    true,
-			"function": "runCronJob",
+			"function": "runCronjobs",
 			"error":    err,
 		}).Fatalln("letterNullification CronJob failed to initialise")
 	}
@@ -60,13 +74,15 @@ func runCronJob(DB *gorm.DB) {
 func checkV2Auth(next framework.HandlerFunc) framework.HandlerFunc {
 	return func(c framework.Context) error {
 		token := c.QueryParam("token")
-		var result Client
-		response := db.Where("secret = ?", token).Select("id").First(&result)
-		if errors.Is(response.Error, gorm.ErrRecordNotFound) {
+		id, err := db.Connector.Query().Where(connector.Secret(token)).FirstID(context.Background())
+		if err != nil {
+			return err
+		}
+		if len(id) == 0 {
 			return c.String(http.StatusUnauthorized, "Unauthorized")
 		}
-		c.Set("client", result.ID)
 
+		c.Set("client", id)
 		return next(c)
 	}
 }
@@ -88,17 +104,30 @@ func init() {
 
 	if len(osSecret) == 0 || len(osDB) == 0 {
 		log.WithFields(log.Fields{
-			"fatal":    true,
 			"function": "init",
 		}).Fatalln("Program failed to initialise. Required environment variables not found: `SECRET_KEY`, `DATABASE_URL`")
 	}
 
-	db = connect()
+	db, err := ent.Open("postgres", osDB)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "init",
+		}).Fatalln("Failed to open database connection.")
+	}
+
+	defer func(db *ent.Client) {
+		err := db.Close()
+		if err != nil {
+			log.WithFields(log.Fields{
+				"function": "init (defer)",
+			}).Fatalln("Failed to close database connection.")
+		}
+	}(db)
+
 	req = request.C()
 
-	if err := db.AutoMigrate(&Account{}, &Letter{}, &Client{}); err != nil {
+	if err := db.Schema.Create(context.Background()); err != nil {
 		log.WithFields(log.Fields{
-			"fatal":    true,
 			"function": "init",
 			"error":    err,
 		}).Fatalln("Database migration was unsuccessful")
@@ -114,7 +143,7 @@ func main() {
 	e.HideBanner = true
 	fmt.Println("Atomic Emails --> Helium V2")
 
-	runCronJob(db)
+	runCronjobs()
 
 	e.Use(
 		middleware.Gzip(),
@@ -138,11 +167,11 @@ func main() {
 
 	system.POST("/parse", ParseAndSend)
 	system.POST("/announcement", sendAnnouncement)
-	system.POST("/create/client", createClient)
+	system.POST("/create/client", createConnector)
 
 	e.GET("/html/:id", getHTML)
 	e.GET("/data/:id", getRaw)
-	e.GET("/clients", fetchClients)
+	e.GET("/clients", fetchConnectors)
 
 	go func() {
 		if err := e.Start(":" + osPort); err != nil && err != http.ErrServerClosed {

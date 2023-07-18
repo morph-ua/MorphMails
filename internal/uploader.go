@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"errors"
 	framework "github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"helium/ent/letter"
 	"net/http"
 )
 
@@ -16,22 +18,21 @@ func uploadHTML(html string, from string, to string) string {
 
 	id := randSeq(8)
 	for {
-		var count int64
-		db.Model(&Letter{}).Where("id = ?", id).Count(&count)
+		count, err := db.Letter.Query().Where(letter.ID(id)).Count(context.Background())
+		if err != nil {
+			break
+		}
 		if count == 0 {
 			break
 		}
 		id = randSeq(8)
 	}
-	data := Letter{
-		ID:   id,
-		Html: html,
-		From: from,
-		To:   to,
+	save, err := db.Letter.Create().SetID(id).SetHTML(html).SetFrom(from).SetTo(to).Save(context.Background())
+	if err != nil {
+		return ""
 	}
-	db.Create(&data)
 
-	return id
+	return save.ID
 }
 
 func getRaw(c framework.Context) error {
