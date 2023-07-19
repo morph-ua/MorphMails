@@ -19,12 +19,12 @@ type Connector struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name" query:"name" form:"name"`
 	// URL holds the value of the "url" field.
-	URL string `json:"url" query:"url" form:"url"`
+	URL string `json:"url,omitempty" query:"url" form:"url"`
 	// Secret holds the value of the "secret" field.
-	Secret string `json:"secret" query:"secret" form:"secret"`
+	Secret string `json:"secret,omitempty" query:"secret" form:"secret"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ConnectorQuery when eager-loading is set.
-	Edges        ConnectorEdges `json:"edges"`
+	Edges        ConnectorEdges `json:"-"`
 	selectValues sql.SelectValues
 }
 

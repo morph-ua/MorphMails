@@ -122,6 +122,9 @@ func init() {
 	if len(osPort) == 0 {
 		osPort = "8080"
 	}
+	if len(osDomain) == 0 {
+		osDomain = "example.com"
+	}
 }
 
 func main() {
@@ -156,11 +159,11 @@ func main() {
 
 	system.POST("/parse", ParseAndSend)
 	system.POST("/announcement", sendAnnouncement)
-	system.POST("/create/client", createConnector)
+	system.POST("/create/connector", createConnector)
 
 	e.GET("/html/:id", getHTML)
 	e.GET("/data/:id", getRaw)
-	e.GET("/clients", fetchConnectors)
+	e.GET("/connectors", fetchConnectors)
 
 	go func() {
 		if err := e.Start(":" + osPort); err != nil && err != http.ErrServerClosed {

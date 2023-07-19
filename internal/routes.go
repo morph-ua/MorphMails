@@ -8,7 +8,6 @@ import (
 	"helium/ent/connector"
 	"helium/ent/receiver"
 	"helium/ent/user"
-	"net/http"
 	"strconv"
 )
 
@@ -120,15 +119,19 @@ func registerAccount(c framework.Context) error {
 		"connectorID": connectorID,
 	}).Infoln("New user registered in the bot")
 
-	return c.JSON(http.StatusOK, userCreated)
+	return c.JSON(200, userCreated)
 }
 
 func assignNew(c framework.Context) error {
 	id := c.Param("id")
 
 	account, err := db.User.Query().WithReceivers().Where(user.HasReceiversWith(receiver.ID(id))).First(ctx)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Internal server error. - "+err.Error())
+	if ent.IsNotFound(err) {
+		return StatusReport(c, 404)
+	} else if err != nil {
+		log.WithFields(log.Fields{
+			"function": "assignNew",
+		}).Error(err)
 	}
 
 	_, err = strconv.Atoi(id)
@@ -160,7 +163,7 @@ loop:
 		"ID":             c.Param("id"),
 	}).Infoln("Successfully assigned new email")
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
+	return c.JSON(200, map[string]interface{}{
 		"id":    c.Param("id"),
 		"email": generated,
 	})
@@ -212,41 +215,35 @@ func delSome(c framework.Context) error {
 
 func listAll(c framework.Context) error {
 	id := c.Param("id")
-	client := c.Get("client").(string)
+	connectorID := c.Get("connectorID").(string)
 
-	resp, err := db.User.Query().WithReceivers().Where(user.HasReceiversWith(receiver.And(receiver.ID(id), receiver.HasConnectorWith(connector.ID(client))))).First(ctx)
+	resp, err := db.User.Query().WithReceivers().Where(user.HasReceiversWith(receiver.And(receiver.ID(id), receiver.HasConnectorWith(connector.ID(connectorID))))).First(ctx)
 
 	if ent.IsNotFound(err) {
-		return c.JSON(http.StatusNotFound, []string{})
+		return c.JSON(404, []string{})
 	} else if err != nil {
 		log.WithFields(log.Fields{
 			"function": "listAll",
 		}).Error(err)
 		return StatusReport(c, 500)
 	}
-	return c.JSON(http.StatusOK, map[string]interface{}{
+	return c.JSON(200, map[string]interface{}{
 		"emails": resp.Emails,
 	})
 }
 
 func turnFwd(c framework.Context) error {
 	id := c.Param("id")
-	client := c.Get("client").(string)
+	connectorID := c.Get("connectorID").(string)
 
-	getUser, err := db.User.Query().Where(user.HasReceiversWith(receiver.And(receiver.ID(id), receiver.HasConnectorWith(connector.ID(client))))).First(ctx)
+	getUser, err := db.User.Query().Where(user.HasReceiversWith(receiver.And(receiver.ID(id), receiver.HasConnectorWith(connector.ID(connectorID))))).First(ctx)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, &Error{
-			Status:  http.StatusInternalServerError,
-			Message: "Internal server error",
-		})
+		return StatusReport(c, 500)
 	}
 
-	err = db.User.Update().Where(user.HasReceiversWith(receiver.And(receiver.ID(id), receiver.HasConnectorWith(connector.ID(client))))).SetForward(!getUser.Forward).Exec(ctx)
+	err = getUser.Update().SetForward(!getUser.Forward).Exec(ctx)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, &Error{
-			Status:  http.StatusInternalServerError,
-			Message: "Internal server error",
-		})
+		return StatusReport(c, 500)
 	}
 
 	log.WithFields(log.Fields{
@@ -254,7 +251,7 @@ func turnFwd(c framework.Context) error {
 		"forward": !getUser.Forward,
 	}).Infoln("Switched forward mode")
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
+	return c.JSON(200, map[string]interface{}{
 		"id":      id,
 		"forward": !getUser.Forward,
 	})
@@ -306,5 +303,5 @@ func sendAnnouncement(c framework.Context) error {
 		"url":     url,
 	}).Infoln("Sent an announcement")
 
-	return c.String(http.StatusOK, "OK")
+	return c.String(200, "OK")
 }
