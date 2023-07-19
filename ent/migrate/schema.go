@@ -10,9 +10,9 @@ import (
 var (
 	// ConnectorsColumns holds the columns for the "connectors" table.
 	ConnectorsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
+		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "url", Type: field.TypeString},
+		{Name: "url", Type: field.TypeString, Unique: true},
 		{Name: "secret", Type: field.TypeString},
 	}
 	// ConnectorsTable holds the schema information for the "connectors" table.
@@ -64,10 +64,10 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "emails", Type: field.TypeJSON},
-		{Name: "forward", Type: field.TypeBool},
-		{Name: "paid", Type: field.TypeBool},
-		{Name: "counter", Type: field.TypeInt8},
+		{Name: "emails", Type: field.TypeJSON, Nullable: true},
+		{Name: "forward", Type: field.TypeBool, Default: true},
+		{Name: "paid", Type: field.TypeBool, Default: false},
+		{Name: "counter", Type: field.TypeInt8, Default: 0},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{

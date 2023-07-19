@@ -21,14 +21,16 @@ import (
 var osSecret = os.Getenv("SECRET_KEY")
 var osDB = os.Getenv("DATABASE_URL")
 var osPort = os.Getenv("PORT")
+var osDomain = os.Getenv("DOMAIN")
 var db *ent.Client
 var req *request.Client
+var ctx = context.Background()
 
 func timesReceivedNullification() {
 	log.WithFields(log.Fields{
 		"function": "timesReceivedNullification",
 	}).Infoln("Running a TimesReceived nullification cronjob")
-	_, err := db.User.Update().Where(user.Paid(false)).SetCounter(0).Save(context.Background())
+	_, err := db.User.Update().Where(user.Paid(false)).SetCounter(0).Save(ctx)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "timesReceivedNullification",
@@ -41,7 +43,7 @@ func letterNullification() {
 	log.WithFields(log.Fields{
 		"function": "letterNullification",
 	}).Infoln("Running a letter nullification cronjob")
-	_, err := db.Letter.Delete().Where(letter.CreatedAtLT(time.Now().AddDate(0, 0, -3))).Exec(context.Background())
+	_, err := db.Letter.Delete().Where(letter.CreatedAtLT(time.Now().AddDate(0, 0, -3))).Exec(ctx)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "letterNullification",
@@ -50,12 +52,12 @@ func letterNullification() {
 	}
 }
 
-func runCronjobs() {
+func cronjobs() {
 	s := cron.NewScheduler(time.UTC)
 	if _, err := s.Every(1).Day().At("00:00").Do(timesReceivedNullification); err != nil {
 		log.WithFields(log.Fields{
 			"fatal":    true,
-			"function": "runCronjobs",
+			"function": "cronjobs",
 			"error":    err,
 		}).Fatalln("timesReceivedNullification CronJob failed to initialise")
 	}
@@ -63,7 +65,7 @@ func runCronjobs() {
 	if _, err := s.Every(3).Days().At("00:00").Do(letterNullification); err != nil {
 		log.WithFields(log.Fields{
 			"fatal":    true,
-			"function": "runCronjobs",
+			"function": "cronjobs",
 			"error":    err,
 		}).Fatalln("letterNullification CronJob failed to initialise")
 	}
@@ -75,14 +77,12 @@ func checkV2Auth(next framework.HandlerFunc) framework.HandlerFunc {
 	return func(c framework.Context) error {
 		token := c.QueryParam("token")
 		id, err := db.Connector.Query().Where(connector.Secret(token)).FirstID(context.Background())
-		if err != nil {
-			return err
-		}
-		if len(id) == 0 {
+
+		if ent.IsNotFound(err) {
 			return c.String(http.StatusUnauthorized, "Unauthorized")
 		}
 
-		c.Set("client", id)
+		c.Set("connectorID", id)
 		return next(c)
 	}
 }
@@ -108,25 +108,11 @@ func init() {
 		}).Fatalln("Program failed to initialise. Required environment variables not found: `SECRET_KEY`, `DATABASE_URL`")
 	}
 
-	db, err := ent.Open("postgres", osDB)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"function": "init",
-		}).Fatalln("Failed to open database connection.")
-	}
-
-	defer func(db *ent.Client) {
-		err := db.Close()
-		if err != nil {
-			log.WithFields(log.Fields{
-				"function": "init (defer)",
-			}).Fatalln("Failed to close database connection.")
-		}
-	}(db)
+	db = Open(osDB)
 
 	req = request.C()
 
-	if err := db.Schema.Create(context.Background()); err != nil {
+	if err := db.Schema.Create(ctx); err != nil {
 		log.WithFields(log.Fields{
 			"function": "init",
 			"error":    err,
@@ -141,9 +127,9 @@ func init() {
 func main() {
 	e := framework.New()
 	e.HideBanner = true
-	fmt.Println("Atomic Emails --> Helium V2")
+	fmt.Println("Server v2.0.0: Helium\nProduction-ready clients: https://github.com/AtomicEmails/clients/tree/v2.0.0-helium")
 
-	runCronjobs()
+	cronjobs()
 
 	e.Use(
 		middleware.Gzip(),
@@ -154,7 +140,10 @@ func main() {
 
 	api.Use(checkV2Auth)
 
-	api.GET("/register/:id", registerNew)
+	api.GET("/is_registered/:id", isRegistered)
+	api.GET("/unique_id/:id", getUniqueID)
+	api.GET("/connect/:id", connectAccount)
+	api.GET("/register/:id", registerAccount)
 	api.GET("/assign/:id", assignNew)
 	api.GET("/forward/:id", turnFwd)
 	api.GET("/delete/:id/:email", delSome)
@@ -179,10 +168,19 @@ func main() {
 		}
 	}()
 
+	defer func(db *ent.Client) {
+		err := db.Close()
+		if err != nil {
+			log.WithFields(log.Fields{
+				"function": "main (defer)",
+			}).Fatalln("Failed to close database connection.")
+		}
+	}(db)
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
 		log.Fatal(err)

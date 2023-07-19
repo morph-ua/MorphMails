@@ -70,6 +70,16 @@ func Counter(v int8) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCounter, v))
 }
 
+// EmailsIsNil applies the IsNil predicate on the "emails" field.
+func EmailsIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldEmails))
+}
+
+// EmailsNotNil applies the NotNil predicate on the "emails" field.
+func EmailsNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldEmails))
+}
+
 // ForwardEQ applies the EQ predicate on the "forward" field.
 func ForwardEQ(v bool) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldForward, v))

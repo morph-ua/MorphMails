@@ -1627,10 +1627,24 @@ func (m *UserMutation) AppendedEmails() ([]string, bool) {
 	return m.appendemails, true
 }
 
+// ClearEmails clears the value of the "emails" field.
+func (m *UserMutation) ClearEmails() {
+	m.emails = nil
+	m.appendemails = nil
+	m.clearedFields[user.FieldEmails] = struct{}{}
+}
+
+// EmailsCleared returns if the "emails" field was cleared in this mutation.
+func (m *UserMutation) EmailsCleared() bool {
+	_, ok := m.clearedFields[user.FieldEmails]
+	return ok
+}
+
 // ResetEmails resets all changes to the "emails" field.
 func (m *UserMutation) ResetEmails() {
 	m.emails = nil
 	m.appendemails = nil
+	delete(m.clearedFields, user.FieldEmails)
 }
 
 // SetForward sets the "forward" field.
@@ -1976,7 +1990,11 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(user.FieldEmails) {
+		fields = append(fields, user.FieldEmails)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1989,6 +2007,11 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
+	switch name {
+	case user.FieldEmails:
+		m.ClearEmails()
+		return nil
+	}
 	return fmt.Errorf("unknown User nullable field %s", name)
 }
 

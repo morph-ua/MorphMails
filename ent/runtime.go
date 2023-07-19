@@ -5,7 +5,10 @@ package ent
 import (
 	"helium/ent/letter"
 	"helium/ent/schema"
+	"helium/ent/user"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -26,4 +29,22 @@ func init() {
 	letterDescCreatedAt := letterFields[4].Descriptor()
 	// letter.DefaultCreatedAt holds the default value on creation for the created_at field.
 	letter.DefaultCreatedAt = letterDescCreatedAt.Default.(time.Time)
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescForward is the schema descriptor for forward field.
+	userDescForward := userFields[2].Descriptor()
+	// user.DefaultForward holds the default value on creation for the forward field.
+	user.DefaultForward = userDescForward.Default.(bool)
+	// userDescPaid is the schema descriptor for paid field.
+	userDescPaid := userFields[3].Descriptor()
+	// user.DefaultPaid holds the default value on creation for the paid field.
+	user.DefaultPaid = userDescPaid.Default.(bool)
+	// userDescCounter is the schema descriptor for counter field.
+	userDescCounter := userFields[4].Descriptor()
+	// user.DefaultCounter holds the default value on creation for the counter field.
+	user.DefaultCounter = userDescCounter.Default.(int8)
+	// userDescID is the schema descriptor for id field.
+	userDescID := userFields[0].Descriptor()
+	// user.DefaultID holds the default value on creation for the id field.
+	user.DefaultID = userDescID.Default.(func() uuid.UUID)
 }

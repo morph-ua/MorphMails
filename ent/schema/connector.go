@@ -16,13 +16,15 @@ func (Connector) Fields() []ent.Field {
 	return []ent.Field{
 		field.
 			String("id").
-			StructTag(`json:"id" query:"id" form:"id"`),
+			StructTag(`json:"id" query:"id" form:"id"`).
+			Unique(),
 		field.
 			String("name").
 			StructTag(`json:"name" query:"name" form:"name"`),
 		field.
 			String("url").
-			StructTag(`json:"url" query:"url" form:"url"`),
+			StructTag(`json:"url" query:"url" form:"url"`).
+			Unique(),
 		field.
 			String("secret").
 			StructTag(`json:"secret" query:"secret" form:"secret"`),

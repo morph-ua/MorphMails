@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
-	"errors"
 	framework "github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
+	"helium/ent"
 	"helium/ent/letter"
 	"net/http"
 )
@@ -18,7 +16,7 @@ func uploadHTML(html string, from string, to string) string {
 
 	id := randSeq(8)
 	for {
-		count, err := db.Letter.Query().Where(letter.ID(id)).Count(context.Background())
+		count, err := db.Letter.Query().Where(letter.ID(id)).Count(ctx)
 		if err != nil {
 			break
 		}
@@ -27,7 +25,7 @@ func uploadHTML(html string, from string, to string) string {
 		}
 		id = randSeq(8)
 	}
-	save, err := db.Letter.Create().SetID(id).SetHTML(html).SetFrom(from).SetTo(to).Save(context.Background())
+	save, err := db.Letter.Create().SetID(id).SetHTML(html).SetFrom(from).SetTo(to).Save(ctx)
 	if err != nil {
 		return ""
 	}
@@ -38,30 +36,38 @@ func uploadHTML(html string, from string, to string) string {
 func getRaw(c framework.Context) error {
 	id := c.Param("id")
 
-	var result Letter
-	res := db.Where("id = ?", id).First(&result)
-
-	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		return c.JSON(http.StatusNotFound, Letter{
-			ID:   id,
-			Html: "<html><head><title>404 Not Found</title></head><body><center><h1>404 Not Found</h1><hr>Atomic Emails</center></body>",
-			From: "not.found@db",
-			To:   "not.found@db",
+	l, err := db.Letter.Query().Where(letter.ID(id)).First(ctx)
+	if ent.IsNotFound(err) {
+		return c.JSON(http.StatusNotFound, map[string]interface{}{
+			"id":   id,
+			"html": "<html><head><title>404 Not Found</title></head><body><center><h1>404 Not Found</h1><hr>Atomic Emails</center></body>",
+			"from": "entity_not_found@" + osDomain,
+			"to":   "entity_not_found@" + osDomain,
 		})
 	}
+	if err != nil {
+		return c.String(400, http.StatusText(400))
+	}
 
-	return c.JSON(http.StatusOK, result)
+	return c.JSON(http.StatusOK, l)
 }
 
 func getHTML(c framework.Context) error {
 	id := c.Param("id")
 
-	var result Letter
-	res := db.Where("id = ?", id).First(&result)
+	l, err := db.Letter.Query().Where(letter.ID(id)).First(ctx)
 
-	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		return c.HTML(http.StatusNotFound, "<html><head><title>404 Not Found</title></head><body><center><h1>404 Not Found</h1><hr>Atomic Emails</center></body>")
+	if ent.IsNotFound(err) {
+		return c.JSON(http.StatusNotFound, map[string]interface{}{
+			"id":   id,
+			"html": "<html><head><title>404 Not Found</title></head><body><center><h1>404 Not Found</h1><hr>Atomic Emails</center></body>",
+			"from": "entity_not_found@" + osDomain,
+			"to":   "entity_not_found@" + osDomain,
+		})
+	}
+	if err != nil {
+		return c.String(400, http.StatusText(400))
 	}
 
-	return c.HTML(http.StatusOK, result.Html)
+	return c.HTML(http.StatusOK, l.HTML)
 }

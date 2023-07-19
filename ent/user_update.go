@@ -41,9 +41,23 @@ func (uu *UserUpdate) AppendEmails(s []string) *UserUpdate {
 	return uu
 }
 
+// ClearEmails clears the value of the "emails" field.
+func (uu *UserUpdate) ClearEmails() *UserUpdate {
+	uu.mutation.ClearEmails()
+	return uu
+}
+
 // SetForward sets the "forward" field.
 func (uu *UserUpdate) SetForward(b bool) *UserUpdate {
 	uu.mutation.SetForward(b)
+	return uu
+}
+
+// SetNillableForward sets the "forward" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableForward(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetForward(*b)
+	}
 	return uu
 }
 
@@ -53,10 +67,26 @@ func (uu *UserUpdate) SetPaid(b bool) *UserUpdate {
 	return uu
 }
 
+// SetNillablePaid sets the "paid" field if the given value is not nil.
+func (uu *UserUpdate) SetNillablePaid(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetPaid(*b)
+	}
+	return uu
+}
+
 // SetCounter sets the "counter" field.
 func (uu *UserUpdate) SetCounter(i int8) *UserUpdate {
 	uu.mutation.ResetCounter()
 	uu.mutation.SetCounter(i)
+	return uu
+}
+
+// SetNillableCounter sets the "counter" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableCounter(i *int8) *UserUpdate {
+	if i != nil {
+		uu.SetCounter(*i)
+	}
 	return uu
 }
 
@@ -151,6 +181,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			sqljson.Append(u, user.FieldEmails, value)
 		})
 	}
+	if uu.mutation.EmailsCleared() {
+		_spec.ClearField(user.FieldEmails, field.TypeJSON)
+	}
 	if value, ok := uu.mutation.Forward(); ok {
 		_spec.SetField(user.FieldForward, field.TypeBool, value)
 	}
@@ -240,9 +273,23 @@ func (uuo *UserUpdateOne) AppendEmails(s []string) *UserUpdateOne {
 	return uuo
 }
 
+// ClearEmails clears the value of the "emails" field.
+func (uuo *UserUpdateOne) ClearEmails() *UserUpdateOne {
+	uuo.mutation.ClearEmails()
+	return uuo
+}
+
 // SetForward sets the "forward" field.
 func (uuo *UserUpdateOne) SetForward(b bool) *UserUpdateOne {
 	uuo.mutation.SetForward(b)
+	return uuo
+}
+
+// SetNillableForward sets the "forward" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableForward(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetForward(*b)
+	}
 	return uuo
 }
 
@@ -252,10 +299,26 @@ func (uuo *UserUpdateOne) SetPaid(b bool) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillablePaid sets the "paid" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillablePaid(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetPaid(*b)
+	}
+	return uuo
+}
+
 // SetCounter sets the "counter" field.
 func (uuo *UserUpdateOne) SetCounter(i int8) *UserUpdateOne {
 	uuo.mutation.ResetCounter()
 	uuo.mutation.SetCounter(i)
+	return uuo
+}
+
+// SetNillableCounter sets the "counter" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableCounter(i *int8) *UserUpdateOne {
+	if i != nil {
+		uuo.SetCounter(*i)
+	}
 	return uuo
 }
 
@@ -379,6 +442,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, user.FieldEmails, value)
 		})
+	}
+	if uuo.mutation.EmailsCleared() {
+		_spec.ClearField(user.FieldEmails, field.TypeJSON)
 	}
 	if value, ok := uuo.mutation.Forward(); ok {
 		_spec.SetField(user.FieldForward, field.TypeBool, value)

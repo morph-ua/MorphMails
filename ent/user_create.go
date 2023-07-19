@@ -33,9 +33,25 @@ func (uc *UserCreate) SetForward(b bool) *UserCreate {
 	return uc
 }
 
+// SetNillableForward sets the "forward" field if the given value is not nil.
+func (uc *UserCreate) SetNillableForward(b *bool) *UserCreate {
+	if b != nil {
+		uc.SetForward(*b)
+	}
+	return uc
+}
+
 // SetPaid sets the "paid" field.
 func (uc *UserCreate) SetPaid(b bool) *UserCreate {
 	uc.mutation.SetPaid(b)
+	return uc
+}
+
+// SetNillablePaid sets the "paid" field if the given value is not nil.
+func (uc *UserCreate) SetNillablePaid(b *bool) *UserCreate {
+	if b != nil {
+		uc.SetPaid(*b)
+	}
 	return uc
 }
 
@@ -45,9 +61,25 @@ func (uc *UserCreate) SetCounter(i int8) *UserCreate {
 	return uc
 }
 
+// SetNillableCounter sets the "counter" field if the given value is not nil.
+func (uc *UserCreate) SetNillableCounter(i *int8) *UserCreate {
+	if i != nil {
+		uc.SetCounter(*i)
+	}
+	return uc
+}
+
 // SetID sets the "id" field.
 func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
 	uc.mutation.SetID(u)
+	return uc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (uc *UserCreate) SetNillableID(u *uuid.UUID) *UserCreate {
+	if u != nil {
+		uc.SetID(*u)
+	}
 	return uc
 }
 
@@ -73,6 +105,7 @@ func (uc *UserCreate) Mutation() *UserMutation {
 
 // Save creates the User in the database.
 func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
+	uc.defaults()
 	return withHooks(ctx, uc.sqlSave, uc.mutation, uc.hooks)
 }
 
@@ -98,11 +131,28 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (uc *UserCreate) defaults() {
+	if _, ok := uc.mutation.Forward(); !ok {
+		v := user.DefaultForward
+		uc.mutation.SetForward(v)
+	}
+	if _, ok := uc.mutation.Paid(); !ok {
+		v := user.DefaultPaid
+		uc.mutation.SetPaid(v)
+	}
+	if _, ok := uc.mutation.Counter(); !ok {
+		v := user.DefaultCounter
+		uc.mutation.SetCounter(v)
+	}
+	if _, ok := uc.mutation.ID(); !ok {
+		v := user.DefaultID()
+		uc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
-	if _, ok := uc.mutation.Emails(); !ok {
-		return &ValidationError{Name: "emails", err: errors.New(`ent: missing required field "User.emails"`)}
-	}
 	if _, ok := uc.mutation.Forward(); !ok {
 		return &ValidationError{Name: "forward", err: errors.New(`ent: missing required field "User.forward"`)}
 	}
@@ -196,6 +246,7 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 	for i := range ucb.builders {
 		func(i int, root context.Context) {
 			builder := ucb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*UserMutation)
 				if !ok {

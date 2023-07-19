@@ -1,19 +1,24 @@
 package main
 
 type (
-	FinalResult struct {
-		ID          string   `json:"id"`
-		Message     string   `json:"message"`
-		RenderedURI string   `json:"renderedURI"`
-		Files       []string `json:"files"`
+	Result struct {
+		ID          string   `json:"id,omitempty"`
+		Message     Message  `json:"message"`
+		RenderedURI string   `json:"rendered_uri,omitempty"`
+		Files       []string `json:"files,omitempty"`
 	}
-	HttpError struct {
-		Status  int    `json:"status"`
-		Message string `json:"message"`
+	Error struct {
+		Status  int    `json:"status,omitempty"`
+		Message string `json:"message,omitempty"`
 	}
-	CDNResponse struct {
-		Uploaded bool   `json:"uploaded"`
-		Status   int    `json:"status"`
-		Message  string `json:"message"`
+	FileUploader struct {
+		Uploaded bool   `json:"uploaded,omitempty"`
+		Status   int    `json:"status,omitempty"`
+		Message  string `json:"message,omitempty"`
+	}
+	Message struct {
+		From string `json:"from,omitempty"`
+		To   string `json:"to,omitempty"`
+		Text string `json:"text,omitempty"`
 	}
 )

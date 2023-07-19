@@ -1,13 +1,13 @@
 package main
 
 import (
-	"context"
 	"entgo.io/ent/dialect/sql"
 	"fmt"
-	framework "github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"helium/ent"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -16,7 +16,7 @@ import (
 
 var rg = regexp.MustCompile(`(\r\n?|\n){2,}`)
 
-func ParseAndSend(c framework.Context) error {
+func ParseAndSend(c echo.Context) error {
 	recipients := strings.Split(c.FormValue("recipient"), ",")
 	from := c.FormValue("from")
 	subject := c.FormValue("subject")
@@ -52,10 +52,12 @@ func ParseAndSend(c framework.Context) error {
 			WithReceivers(func(query *ent.ReceiverQuery) {
 				query.WithConnector()
 			}).
-			First(context.Background())
+			First(ctx)
 
-		if err != nil {
+		if ent.IsNotFound(err) {
 			continue
+		} else if err != nil {
+			return StatusReport(c, 500)
 		}
 
 		if user.Forward {
@@ -65,35 +67,33 @@ func ParseAndSend(c framework.Context) error {
 			var files []string
 			if count > 0 {
 				for i := 1; i <= count; i++ {
-					file, err := c.FormFile(fmt.Sprintf("attachment-%d", i))
-					if err != nil {
-						return c.JSON(http.StatusBadRequest, HttpError{
-							Status:  http.StatusBadRequest,
-							Message: "Malformed file uploaded",
-						})
+					var fileContent []byte
+					var file *multipart.FileHeader
+					if err := func() error {
+						file, err = c.FormFile(fmt.Sprintf("attachment-%d", i))
+						if err != nil {
+							return err
+						}
+						fileBuf, err := file.Open()
+						if err != nil {
+							return err
+						}
+						fileContent, err = io.ReadAll(fileBuf)
+						if err != nil {
+							return err
+						}
+						return nil
+					}(); err != nil {
+						return StatusReport(c, 400)
 					}
-					fileBuf, err := file.Open()
-					if err != nil {
-						return c.JSON(http.StatusBadRequest, HttpError{
-							Status:  http.StatusBadRequest,
-							Message: "Malformed file uploaded",
-						})
-					}
-					fileRead, err := io.ReadAll(fileBuf)
-					if err != nil {
-						return c.JSON(http.StatusBadRequest, HttpError{
-							Status:  http.StatusBadRequest,
-							Message: "Malformed file uploaded",
-						})
-					}
-					var result CDNResponse
+					var result FileUploader
 					_, err = req.R().
-						SetFileBytes("file", file.Filename, fileRead).
+						SetFileBytes("file", file.Filename, fileContent).
 						SetHeader("Accept", "application/json").
 						SetSuccessResult(&result).
 						Post("https://cdn.lowt.live")
 					if err != nil {
-						return c.JSON(http.StatusBadRequest, HttpError{
+						return c.JSON(http.StatusBadRequest, Error{
 							Status:  http.StatusBadRequest,
 							Message: "Failed to upload one of the files to CDN",
 						})
@@ -111,21 +111,23 @@ func ParseAndSend(c framework.Context) error {
 			}).Infoln("Successfully parsed an email")
 
 			for _, receiver := range user.Edges.Receivers {
-				finalRes := FinalResult{
-					Message:     fmt.Sprintf(messageTemplate, from, rawRecipient, subject, text),
+				result := Result{
+					Message: Message{
+						From: from,
+						To:   recipient,
+						Text: text,
+					},
 					RenderedURI: htmlRendered,
 					ID:          receiver.ID,
 					Files:       files,
 				}
 
 				receiver := receiver
-				go func() {
-					_ = syncWithClients(finalRes, receiver.Edges.Connector.URL)
-				}()
+				go syncConnectors(result, receiver.Edges.Connector.URL)
 			}
 
-			return c.String(http.StatusOK, http.StatusText(http.StatusOK))
+			return StatusReport(c, 200)
 		}
 	}
-	return c.JSON(http.StatusBadRequest, badRequestMessage)
+	return StatusReport(c, 200)
 }

@@ -28,7 +28,7 @@ type User struct {
 	Counter int8 `json:"counter,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges        UserEdges `json:"edges"`
+	Edges        UserEdges `json:"-"`
 	selectValues sql.SelectValues
 }
 
