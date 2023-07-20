@@ -23,7 +23,7 @@ incoming emails to your client.
 
 ### Persistent email address
 One persistent email address is created for each ID (Unique chat identification number in your client).
-You can use this email address to receive emails from friends and family instead of using your main  email address.
+You can use this email address to receive emails from friends and family instead of using your main email address.
 The service will parse and forward all incoming emails to your client.
 
 ### Connect your own domain
@@ -34,7 +34,7 @@ follow the instructions in the [Installation](#installation) section.
 ## Installation
 ### Requirements
 - VPS/VDS or your own machine with a public IP address.
-- PostgreSQL database.
+- Postgres database.
 - Docker (Recommended).
 
 ### Setup
@@ -57,7 +57,7 @@ Using Binaries:
 - Run the following command:
 
 ```bash
-$ DATABASE_URL=<your_db_url> SECRET_KEY=<global_service_key_to_parse_emails> ./AtomicEmails
+$ DATABASE_URL=<your_db_url> SECRET_KEY=<global_service_key_to_parse_emails> ./helium
 ```
 
 - Next steps from [Network Setup](#network-setup) section.
