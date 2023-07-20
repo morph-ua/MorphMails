@@ -2,4 +2,5 @@
 build
 dist/
 
-dist/
+helium.exe
+helium

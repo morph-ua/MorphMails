@@ -1,3 +1,3 @@
 FROM scratch
-COPY AtomicEmails /bin/server
+COPY helium /bin/server
 ENTRYPOINT ["server"]
