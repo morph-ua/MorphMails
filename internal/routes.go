@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	framework "github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 	"helium/ent"
 	"helium/ent/connector"
 	"helium/ent/receiver"
@@ -190,7 +191,7 @@ func delSome(c framework.Context) error {
 	email := c.Param("email")
 
 	userLoaded, err := db.User.Query().Where(user.HasReceiversWith(receiver.ID(id))).First(ctx)
-	if ent.IsNotFound(err) {
+	if ent.IsNotFound(err) || len(userLoaded.Emails) == 0 || !slices.Contains(userLoaded.Emails, email) {
 		return StatusReport(c, 404)
 	}
 
