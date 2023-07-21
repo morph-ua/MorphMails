@@ -17,8 +17,9 @@ type (
 		Message  string `json:"message,omitempty"`
 	}
 	Message struct {
-		From string `json:"from,omitempty"`
-		To   string `json:"to,omitempty"`
-		Text string `json:"text,omitempty"`
+		From    string `json:"from,omitempty"`
+		To      string `json:"to,omitempty"`
+		Text    string `json:"text,omitempty"`
+		Subject string `json:"subject,omitempty"`
 	}
 )

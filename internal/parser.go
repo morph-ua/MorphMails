@@ -113,9 +113,10 @@ func ParseAndSend(c echo.Context) error {
 			for _, receiver := range user.Edges.Receivers {
 				result := Result{
 					Message: Message{
-						From: from,
-						To:   recipient,
-						Text: text,
+						From:    from,
+						To:      recipient,
+						Subject: subject,
+						Text:    text,
 					},
 					RenderedURI: htmlRendered,
 					ID:          receiver.ID,
