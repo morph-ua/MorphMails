@@ -220,8 +220,8 @@ func listAll(c framework.Context) error {
 
 	resp, err := db.User.Query().WithReceivers().Where(user.HasReceiversWith(receiver.And(receiver.ID(id), receiver.HasConnectorWith(connector.ID(connectorID))))).First(ctx)
 
-	if ent.IsNotFound(err) {
-		return c.JSON(404, []string{})
+	if ent.IsNotFound(err) || len(resp.Emails) == 0 {
+		return StatusReport(c, 404)
 	} else if err != nil {
 		log.WithFields(log.Fields{
 			"function": "listAll",

@@ -2,10 +2,12 @@ package main
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"helium/ent"
+	"helium/ent/user"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -44,10 +46,12 @@ func ParseAndSend(c echo.Context) error {
 			recipient = strings.Split(split[0], "+")[0] + "@" + split[1]
 		}
 
-		user, err := db.User.Query().
-			Select("forward", "paid", "counter", "receivers").
+		firstUser, err := db.User.
+			Query().
+			WithReceivers().
+			Select("forward", "paid", "counter").
 			Where(func(selector *sql.Selector) {
-				selector.Where(sql.Contains("emails", recipient))
+				selector.Where(sqljson.ValueContains(user.FieldEmails, recipient))
 			}).
 			WithReceivers(func(query *ent.ReceiverQuery) {
 				query.WithConnector()
@@ -57,10 +61,13 @@ func ParseAndSend(c echo.Context) error {
 		if ent.IsNotFound(err) {
 			continue
 		} else if err != nil {
+			log.WithFields(log.Fields{
+				"function": "parseAndSend",
+			}).Error(err)
 			return StatusReport(c, 500)
 		}
 
-		if user.Forward {
+		if firstUser.Forward {
 			htmlRendered := "https://www.decline.live/preview/" + uploadHTML(html, from, rawRecipient)
 
 			count, _ := strconv.Atoi(atc)
@@ -105,12 +112,12 @@ func ParseAndSend(c echo.Context) error {
 
 			log.WithFields(log.Fields{
 				"recipients":    recipients,
-				"ID":            user.ID,
+				"ID":            firstUser.ID,
 				"subject":       subject,
 				"renderedEmail": htmlRendered,
 			}).Infoln("Successfully parsed an email")
 
-			for _, receiver := range user.Edges.Receivers {
+			for _, receiver := range firstUser.Edges.Receivers {
 				result := Result{
 					Message: Message{
 						From:    from,
