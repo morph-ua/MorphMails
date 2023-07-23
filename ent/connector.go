@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"helium/ent/connector"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -22,6 +23,8 @@ type Connector struct {
 	URL string `json:"url,omitempty" query:"url" form:"url"`
 	// Secret holds the value of the "secret" field.
 	Secret string `json:"secret,omitempty" query:"secret" form:"secret"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ConnectorQuery when eager-loading is set.
 	Edges        ConnectorEdges `json:"-"`
@@ -53,6 +56,8 @@ func (*Connector) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case connector.FieldID, connector.FieldName, connector.FieldURL, connector.FieldSecret:
 			values[i] = new(sql.NullString)
+		case connector.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -91,6 +96,12 @@ func (c *Connector) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field secret", values[i])
 			} else if value.Valid {
 				c.Secret = value.String
+			}
+		case connector.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				c.CreatedAt = value.Time
 			}
 		default:
 			c.selectValues.Set(columns[i], values[i])
@@ -141,6 +152,9 @@ func (c *Connector) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("secret=")
 	builder.WriteString(c.Secret)
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(c.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"time"
 )
 
 // Connector holds the schema definition for the Connector entity.
@@ -38,6 +39,10 @@ func (Connector) Fields() []ent.Field {
 		field.
 			String("secret").
 			StructTag(`json:"secret,omitempty" query:"secret" form:"secret"`),
+		field.Time("created_at").
+			Default(time.Now).
+			Immutable().
+			Optional(),
 	}
 }
 

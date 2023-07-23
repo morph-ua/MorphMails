@@ -43,6 +43,7 @@ type ConnectorMutation struct {
 	name             *string
 	url              *string
 	secret           *string
+	created_at       *time.Time
 	clearedFields    map[string]struct{}
 	receivers        map[string]struct{}
 	removedreceivers map[string]struct{}
@@ -264,6 +265,55 @@ func (m *ConnectorMutation) ResetSecret() {
 	m.secret = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *ConnectorMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ConnectorMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Connector entity.
+// If the Connector object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectorMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *ConnectorMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[connector.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *ConnectorMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[connector.FieldCreatedAt]
+	return ok
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ConnectorMutation) ResetCreatedAt() {
+	m.created_at = nil
+	delete(m.clearedFields, connector.FieldCreatedAt)
+}
+
 // AddReceiverIDs adds the "receivers" edge to the Receiver entity by ids.
 func (m *ConnectorMutation) AddReceiverIDs(ids ...string) {
 	if m.receivers == nil {
@@ -352,7 +402,7 @@ func (m *ConnectorMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ConnectorMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.name != nil {
 		fields = append(fields, connector.FieldName)
 	}
@@ -361,6 +411,9 @@ func (m *ConnectorMutation) Fields() []string {
 	}
 	if m.secret != nil {
 		fields = append(fields, connector.FieldSecret)
+	}
+	if m.created_at != nil {
+		fields = append(fields, connector.FieldCreatedAt)
 	}
 	return fields
 }
@@ -376,6 +429,8 @@ func (m *ConnectorMutation) Field(name string) (ent.Value, bool) {
 		return m.URL()
 	case connector.FieldSecret:
 		return m.Secret()
+	case connector.FieldCreatedAt:
+		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -391,6 +446,8 @@ func (m *ConnectorMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldURL(ctx)
 	case connector.FieldSecret:
 		return m.OldSecret(ctx)
+	case connector.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Connector field %s", name)
 }
@@ -421,6 +478,13 @@ func (m *ConnectorMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetSecret(v)
 		return nil
+	case connector.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Connector field %s", name)
 }
@@ -450,7 +514,11 @@ func (m *ConnectorMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ConnectorMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(connector.FieldCreatedAt) {
+		fields = append(fields, connector.FieldCreatedAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -463,6 +531,11 @@ func (m *ConnectorMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ConnectorMutation) ClearField(name string) error {
+	switch name {
+	case connector.FieldCreatedAt:
+		m.ClearCreatedAt()
+		return nil
+	}
 	return fmt.Errorf("unknown Connector nullable field %s", name)
 }
 
@@ -478,6 +551,9 @@ func (m *ConnectorMutation) ResetField(name string) error {
 		return nil
 	case connector.FieldSecret:
 		m.ResetSecret()
+		return nil
+	case connector.FieldCreatedAt:
+		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Connector field %s", name)
@@ -1067,6 +1143,7 @@ type ReceiverMutation struct {
 	op               Op
 	typ              string
 	id               *string
+	created_at       *time.Time
 	clearedFields    map[string]struct{}
 	user             *uuid.UUID
 	cleareduser      bool
@@ -1181,6 +1258,55 @@ func (m *ReceiverMutation) IDs(ctx context.Context) ([]string, error) {
 	}
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *ReceiverMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ReceiverMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Receiver entity.
+// If the Receiver object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReceiverMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *ReceiverMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[receiver.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *ReceiverMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[receiver.FieldCreatedAt]
+	return ok
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ReceiverMutation) ResetCreatedAt() {
+	m.created_at = nil
+	delete(m.clearedFields, receiver.FieldCreatedAt)
+}
+
 // SetUserID sets the "user" edge to the User entity by id.
 func (m *ReceiverMutation) SetUserID(id uuid.UUID) {
 	m.user = &id
@@ -1293,7 +1419,10 @@ func (m *ReceiverMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ReceiverMutation) Fields() []string {
-	fields := make([]string, 0, 0)
+	fields := make([]string, 0, 1)
+	if m.created_at != nil {
+		fields = append(fields, receiver.FieldCreatedAt)
+	}
 	return fields
 }
 
@@ -1301,6 +1430,10 @@ func (m *ReceiverMutation) Fields() []string {
 // return value indicates that this field was not set, or was not defined in the
 // schema.
 func (m *ReceiverMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case receiver.FieldCreatedAt:
+		return m.CreatedAt()
+	}
 	return nil, false
 }
 
@@ -1308,6 +1441,10 @@ func (m *ReceiverMutation) Field(name string) (ent.Value, bool) {
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
 func (m *ReceiverMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case receiver.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
 	return nil, fmt.Errorf("unknown Receiver field %s", name)
 }
 
@@ -1316,6 +1453,13 @@ func (m *ReceiverMutation) OldField(ctx context.Context, name string) (ent.Value
 // type.
 func (m *ReceiverMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case receiver.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Receiver field %s", name)
 }
@@ -1337,13 +1481,19 @@ func (m *ReceiverMutation) AddedField(name string) (ent.Value, bool) {
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
 func (m *ReceiverMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Receiver numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ReceiverMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(receiver.FieldCreatedAt) {
+		fields = append(fields, receiver.FieldCreatedAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1356,12 +1506,22 @@ func (m *ReceiverMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ReceiverMutation) ClearField(name string) error {
+	switch name {
+	case receiver.FieldCreatedAt:
+		m.ClearCreatedAt()
+		return nil
+	}
 	return fmt.Errorf("unknown Receiver nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
 func (m *ReceiverMutation) ResetField(name string) error {
+	switch name {
+	case receiver.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
 	return fmt.Errorf("unknown Receiver field %s", name)
 }
 
@@ -1469,6 +1629,7 @@ type UserMutation struct {
 	paid             *bool
 	counter          *int8
 	addcounter       *int8
+	created_at       *time.Time
 	clearedFields    map[string]struct{}
 	receivers        map[string]struct{}
 	removedreceivers map[string]struct{}
@@ -1775,6 +1936,55 @@ func (m *UserMutation) ResetCounter() {
 	m.addcounter = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *UserMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *UserMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *UserMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[user.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *UserMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[user.FieldCreatedAt]
+	return ok
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *UserMutation) ResetCreatedAt() {
+	m.created_at = nil
+	delete(m.clearedFields, user.FieldCreatedAt)
+}
+
 // AddReceiverIDs adds the "receivers" edge to the Receiver entity by ids.
 func (m *UserMutation) AddReceiverIDs(ids ...string) {
 	if m.receivers == nil {
@@ -1863,7 +2073,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.emails != nil {
 		fields = append(fields, user.FieldEmails)
 	}
@@ -1875,6 +2085,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.counter != nil {
 		fields = append(fields, user.FieldCounter)
+	}
+	if m.created_at != nil {
+		fields = append(fields, user.FieldCreatedAt)
 	}
 	return fields
 }
@@ -1892,6 +2105,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Paid()
 	case user.FieldCounter:
 		return m.Counter()
+	case user.FieldCreatedAt:
+		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -1909,6 +2124,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPaid(ctx)
 	case user.FieldCounter:
 		return m.OldCounter(ctx)
+	case user.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -1945,6 +2162,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCounter(v)
+		return nil
+	case user.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -1994,6 +2218,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldEmails) {
 		fields = append(fields, user.FieldEmails)
 	}
+	if m.FieldCleared(user.FieldCreatedAt) {
+		fields = append(fields, user.FieldCreatedAt)
+	}
 	return fields
 }
 
@@ -2010,6 +2237,9 @@ func (m *UserMutation) ClearField(name string) error {
 	switch name {
 	case user.FieldEmails:
 		m.ClearEmails()
+		return nil
+	case user.FieldCreatedAt:
+		m.ClearCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -2030,6 +2260,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldCounter:
 		m.ResetCounter()
+		return nil
+	case user.FieldCreatedAt:
+		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

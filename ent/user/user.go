@@ -3,6 +3,8 @@
 package user
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -21,6 +23,8 @@ const (
 	FieldPaid = "paid"
 	// FieldCounter holds the string denoting the counter field in the database.
 	FieldCounter = "counter"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
 	// EdgeReceivers holds the string denoting the receivers edge name in mutations.
 	EdgeReceivers = "receivers"
 	// Table holds the table name of the user in the database.
@@ -41,6 +45,7 @@ var Columns = []string{
 	FieldForward,
 	FieldPaid,
 	FieldCounter,
+	FieldCreatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -60,6 +65,8 @@ var (
 	DefaultPaid bool
 	// DefaultCounter holds the default value on creation for the "counter" field.
 	DefaultCounter int8
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -85,6 +92,11 @@ func ByPaid(opts ...sql.OrderTermOption) OrderOption {
 // ByCounter orders the results by the counter field.
 func ByCounter(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCounter, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByReceiversCount orders the results by receivers count.

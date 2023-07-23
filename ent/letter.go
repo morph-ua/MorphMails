@@ -23,7 +23,7 @@ type Letter struct {
 	From string `json:"from,omitempty"`
 	// To holds the value of the "to" field.
 	To string `json:"to,omitempty"`
-	// Save time to delete after 3 days
+	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt    time.Time `json:"created_at,omitempty"`
 	selectValues sql.SelectValues
 }

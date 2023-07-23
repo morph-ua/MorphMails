@@ -3,6 +3,8 @@
 package connector
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -18,6 +20,8 @@ const (
 	FieldURL = "url"
 	// FieldSecret holds the string denoting the secret field in the database.
 	FieldSecret = "secret"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
 	// EdgeReceivers holds the string denoting the receivers edge name in mutations.
 	EdgeReceivers = "receivers"
 	// Table holds the table name of the connector in the database.
@@ -37,6 +41,7 @@ var Columns = []string{
 	FieldName,
 	FieldURL,
 	FieldSecret,
+	FieldCreatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -48,6 +53,11 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+)
 
 // OrderOption defines the ordering options for the Connector queries.
 type OrderOption func(*sql.Selector)
@@ -70,6 +80,11 @@ func ByURL(opts ...sql.OrderTermOption) OrderOption {
 // BySecret orders the results by the secret field.
 func BySecret(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSecret, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByReceiversCount orders the results by receivers count.

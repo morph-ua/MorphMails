@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"time"
 )
 
 // Receiver holds the schema definition for the Receiver entity.
@@ -15,6 +16,10 @@ type Receiver struct {
 func (Receiver) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id"),
+		field.Time("created_at").
+			Default(time.Now).
+			Immutable().
+			Optional(),
 	}
 }
 

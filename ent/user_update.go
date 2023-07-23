@@ -196,6 +196,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.AddedCounter(); ok {
 		_spec.AddField(user.FieldCounter, field.TypeInt8, value)
 	}
+	if uu.mutation.CreatedAtCleared() {
+		_spec.ClearField(user.FieldCreatedAt, field.TypeTime)
+	}
 	if uu.mutation.ReceiversCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -457,6 +460,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.AddedCounter(); ok {
 		_spec.AddField(user.FieldCounter, field.TypeInt8, value)
+	}
+	if uuo.mutation.CreatedAtCleared() {
+		_spec.ClearField(user.FieldCreatedAt, field.TypeTime)
 	}
 	if uuo.mutation.ReceiversCleared() {
 		edge := &sqlgraph.EdgeSpec{

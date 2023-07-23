@@ -3,7 +3,9 @@
 package ent
 
 import (
+	"helium/ent/connector"
 	"helium/ent/letter"
+	"helium/ent/receiver"
 	"helium/ent/schema"
 	"helium/ent/user"
 	"time"
@@ -15,6 +17,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	connectorFields := schema.Connector{}.Fields()
+	_ = connectorFields
+	// connectorDescCreatedAt is the schema descriptor for created_at field.
+	connectorDescCreatedAt := connectorFields[4].Descriptor()
+	// connector.DefaultCreatedAt holds the default value on creation for the created_at field.
+	connector.DefaultCreatedAt = connectorDescCreatedAt.Default.(func() time.Time)
 	letterFields := schema.Letter{}.Fields()
 	_ = letterFields
 	// letterDescFrom is the schema descriptor for from field.
@@ -28,7 +36,13 @@ func init() {
 	// letterDescCreatedAt is the schema descriptor for created_at field.
 	letterDescCreatedAt := letterFields[4].Descriptor()
 	// letter.DefaultCreatedAt holds the default value on creation for the created_at field.
-	letter.DefaultCreatedAt = letterDescCreatedAt.Default.(time.Time)
+	letter.DefaultCreatedAt = letterDescCreatedAt.Default.(func() time.Time)
+	receiverFields := schema.Receiver{}.Fields()
+	_ = receiverFields
+	// receiverDescCreatedAt is the schema descriptor for created_at field.
+	receiverDescCreatedAt := receiverFields[1].Descriptor()
+	// receiver.DefaultCreatedAt holds the default value on creation for the created_at field.
+	receiver.DefaultCreatedAt = receiverDescCreatedAt.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescForward is the schema descriptor for forward field.
@@ -43,6 +57,10 @@ func init() {
 	userDescCounter := userFields[4].Descriptor()
 	// user.DefaultCounter holds the default value on creation for the counter field.
 	user.DefaultCounter = userDescCounter.Default.(int8)
+	// userDescCreatedAt is the schema descriptor for created_at field.
+	userDescCreatedAt := userFields[5].Descriptor()
+	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
+	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescID is the schema descriptor for id field.
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.

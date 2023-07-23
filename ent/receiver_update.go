@@ -119,6 +119,9 @@ func (ru *ReceiverUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if ru.mutation.CreatedAtCleared() {
+		_spec.ClearField(receiver.FieldCreatedAt, field.TypeTime)
+	}
 	if ru.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -315,6 +318,9 @@ func (ruo *ReceiverUpdateOne) sqlSave(ctx context.Context) (_node *Receiver, err
 				ps[i](selector)
 			}
 		}
+	}
+	if ruo.mutation.CreatedAtCleared() {
+		_spec.ClearField(receiver.FieldCreatedAt, field.TypeTime)
 	}
 	if ruo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

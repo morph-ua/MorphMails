@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"helium/ent/receiver"
 	"helium/ent/user"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -65,6 +66,20 @@ func (uc *UserCreate) SetCounter(i int8) *UserCreate {
 func (uc *UserCreate) SetNillableCounter(i *int8) *UserCreate {
 	if i != nil {
 		uc.SetCounter(*i)
+	}
+	return uc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
+	uc.mutation.SetCreatedAt(t)
+	return uc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetCreatedAt(*t)
 	}
 	return uc
 }
@@ -145,6 +160,10 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultCounter
 		uc.mutation.SetCounter(v)
 	}
+	if _, ok := uc.mutation.CreatedAt(); !ok {
+		v := user.DefaultCreatedAt()
+		uc.mutation.SetCreatedAt(v)
+	}
 	if _, ok := uc.mutation.ID(); !ok {
 		v := user.DefaultID()
 		uc.mutation.SetID(v)
@@ -212,6 +231,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Counter(); ok {
 		_spec.SetField(user.FieldCounter, field.TypeInt8, value)
 		_node.Counter = value
+	}
+	if value, ok := uc.mutation.CreatedAt(); ok {
+		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
 	}
 	if nodes := uc.mutation.ReceiversIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

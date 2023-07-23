@@ -8,6 +8,7 @@ import (
 	"helium/ent/receiver"
 	"helium/ent/user"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -16,9 +17,11 @@ import (
 
 // Receiver is the model entity for the Receiver schema.
 type Receiver struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
 	ID string `json:"id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ReceiverQuery when eager-loading is set.
 	Edges               ReceiverEdges `json:"edges"`
@@ -71,6 +74,8 @@ func (*Receiver) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case receiver.FieldID:
 			values[i] = new(sql.NullString)
+		case receiver.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
 		case receiver.ForeignKeys[0]: // connector_receivers
 			values[i] = new(sql.NullString)
 		case receiver.ForeignKeys[1]: // user_receivers
@@ -95,6 +100,12 @@ func (r *Receiver) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				r.ID = value.String
+			}
+		case receiver.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				r.CreatedAt = value.Time
 			}
 		case receiver.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -155,7 +166,9 @@ func (r *Receiver) Unwrap() *Receiver {
 func (r *Receiver) String() string {
 	var builder strings.Builder
 	builder.WriteString("Receiver(")
-	builder.WriteString(fmt.Sprintf("id=%v", r.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
+	builder.WriteString("created_at=")
+	builder.WriteString(r.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

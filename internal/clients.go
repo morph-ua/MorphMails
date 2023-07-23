@@ -1,18 +1,18 @@
 package main
 
 import (
+	"helium/ent"
+	"net/http"
+
 	framework "github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
-	"helium/ent"
-	"helium/ent/connector"
-	"net/http"
 )
 
 func createConnector(context framework.Context) error {
 	c := new(ent.Connector)
 
 	if err := context.Bind(c); err != nil {
-		return StatusReport(context, 400)
+		return StatusReport(context, http.StatusBadRequest)
 	}
 
 	save, err := db.
@@ -29,9 +29,11 @@ func createConnector(context framework.Context) error {
 			"function":      "createConnector",
 			"connectorData": c,
 		})
-		return StatusReport(context, 500)
+
+		return StatusReport(context, http.StatusInternalServerError)
 	}
-	return context.JSON(200, save)
+
+	return context.JSON(http.StatusOK, save)
 }
 
 func fetchConnectors(c framework.Context) error {
@@ -40,13 +42,5 @@ func fetchConnectors(c framework.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(200, all)
-}
-
-func getConnector(id string) string {
-	first, err := db.Connector.Query().Where(connector.ID(id)).Select("url").First(ctx)
-	if err != nil {
-		return ""
-	}
-	return first.URL
+	return c.JSON(http.StatusOK, all)
 }

@@ -9,6 +9,7 @@ import (
 	"helium/ent/connector"
 	"helium/ent/receiver"
 	"helium/ent/user"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -20,6 +21,20 @@ type ReceiverCreate struct {
 	config
 	mutation *ReceiverMutation
 	hooks    []Hook
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (rc *ReceiverCreate) SetCreatedAt(t time.Time) *ReceiverCreate {
+	rc.mutation.SetCreatedAt(t)
+	return rc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (rc *ReceiverCreate) SetNillableCreatedAt(t *time.Time) *ReceiverCreate {
+	if t != nil {
+		rc.SetCreatedAt(*t)
+	}
+	return rc
 }
 
 // SetID sets the "id" field.
@@ -57,6 +72,7 @@ func (rc *ReceiverCreate) Mutation() *ReceiverMutation {
 
 // Save creates the Receiver in the database.
 func (rc *ReceiverCreate) Save(ctx context.Context) (*Receiver, error) {
+	rc.defaults()
 	return withHooks(ctx, rc.sqlSave, rc.mutation, rc.hooks)
 }
 
@@ -79,6 +95,14 @@ func (rc *ReceiverCreate) Exec(ctx context.Context) error {
 func (rc *ReceiverCreate) ExecX(ctx context.Context) {
 	if err := rc.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (rc *ReceiverCreate) defaults() {
+	if _, ok := rc.mutation.CreatedAt(); !ok {
+		v := receiver.DefaultCreatedAt()
+		rc.mutation.SetCreatedAt(v)
 	}
 }
 
@@ -124,6 +148,10 @@ func (rc *ReceiverCreate) createSpec() (*Receiver, *sqlgraph.CreateSpec) {
 	if id, ok := rc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := rc.mutation.CreatedAt(); ok {
+		_spec.SetField(receiver.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
 	}
 	if nodes := rc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -176,6 +204,7 @@ func (rcb *ReceiverCreateBulk) Save(ctx context.Context) ([]*Receiver, error) {
 	for i := range rcb.builders {
 		func(i int, root context.Context) {
 			builder := rcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ReceiverMutation)
 				if !ok {

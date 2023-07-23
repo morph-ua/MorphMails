@@ -132,6 +132,9 @@ func (cu *ConnectorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cu.mutation.Secret(); ok {
 		_spec.SetField(connector.FieldSecret, field.TypeString, value)
 	}
+	if cu.mutation.CreatedAtCleared() {
+		_spec.ClearField(connector.FieldCreatedAt, field.TypeTime)
+	}
 	if cu.mutation.ReceiversCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -330,6 +333,9 @@ func (cuo *ConnectorUpdateOne) sqlSave(ctx context.Context) (_node *Connector, e
 	}
 	if value, ok := cuo.mutation.Secret(); ok {
 		_spec.SetField(connector.FieldSecret, field.TypeString, value)
+	}
+	if cuo.mutation.CreatedAtCleared() {
+		_spec.ClearField(connector.FieldCreatedAt, field.TypeTime)
 	}
 	if cuo.mutation.ReceiversCleared() {
 		edge := &sqlgraph.EdgeSpec{
