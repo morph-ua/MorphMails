@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"helium/ent/connector"
 	"helium/ent/receiver"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -35,6 +36,20 @@ func (cc *ConnectorCreate) SetURL(s string) *ConnectorCreate {
 // SetSecret sets the "secret" field.
 func (cc *ConnectorCreate) SetSecret(s string) *ConnectorCreate {
 	cc.mutation.SetSecret(s)
+	return cc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (cc *ConnectorCreate) SetCreatedAt(t time.Time) *ConnectorCreate {
+	cc.mutation.SetCreatedAt(t)
+	return cc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (cc *ConnectorCreate) SetNillableCreatedAt(t *time.Time) *ConnectorCreate {
+	if t != nil {
+		cc.SetCreatedAt(*t)
+	}
 	return cc
 }
 
@@ -66,6 +81,7 @@ func (cc *ConnectorCreate) Mutation() *ConnectorMutation {
 
 // Save creates the Connector in the database.
 func (cc *ConnectorCreate) Save(ctx context.Context) (*Connector, error) {
+	cc.defaults()
 	return withHooks(ctx, cc.sqlSave, cc.mutation, cc.hooks)
 }
 
@@ -88,6 +104,14 @@ func (cc *ConnectorCreate) Exec(ctx context.Context) error {
 func (cc *ConnectorCreate) ExecX(ctx context.Context) {
 	if err := cc.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (cc *ConnectorCreate) defaults() {
+	if _, ok := cc.mutation.CreatedAt(); !ok {
+		v := connector.DefaultCreatedAt()
+		cc.mutation.SetCreatedAt(v)
 	}
 }
 
@@ -149,6 +173,10 @@ func (cc *ConnectorCreate) createSpec() (*Connector, *sqlgraph.CreateSpec) {
 		_spec.SetField(connector.FieldSecret, field.TypeString, value)
 		_node.Secret = value
 	}
+	if value, ok := cc.mutation.CreatedAt(); ok {
+		_spec.SetField(connector.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
 	if nodes := cc.mutation.ReceiversIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -182,6 +210,7 @@ func (ccb *ConnectorCreateBulk) Save(ctx context.Context) ([]*Connector, error) 
 	for i := range ccb.builders {
 		func(i int, root context.Context) {
 			builder := ccb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ConnectorMutation)
 				if !ok {

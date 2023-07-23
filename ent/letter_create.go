@@ -94,7 +94,7 @@ func (lc *LetterCreate) ExecX(ctx context.Context) {
 // defaults sets the default values of the builder before save.
 func (lc *LetterCreate) defaults() {
 	if _, ok := lc.mutation.CreatedAt(); !ok {
-		v := letter.DefaultCreatedAt
+		v := letter.DefaultCreatedAt()
 		lc.mutation.SetCreatedAt(v)
 	}
 }

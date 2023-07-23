@@ -2,7 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
+
+	"github.com/teris-io/shortid"
+
 	cron "github.com/go-co-op/gocron"
 	request "github.com/imroc/req/v3"
 	framework "github.com/labstack/echo/v4"
@@ -12,25 +18,26 @@ import (
 	"helium/ent/connector"
 	"helium/ent/letter"
 	"helium/ent/user"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
 )
 
-var osSecret = os.Getenv("SECRET_KEY")
-var osDB = os.Getenv("DATABASE_URL")
-var osPort = os.Getenv("PORT")
-var osDomain = os.Getenv("DOMAIN")
-var db *ent.Client
-var req *request.Client
-var ctx = context.Background()
+var (
+	osSecret = os.Getenv("SECRET_KEY")
+	osDB     = os.Getenv("DATABASE_URL")
+	osPort   = os.Getenv("PORT")
+	osDomain = os.Getenv("DOMAIN")
+	db       *ent.Client
+	req      *request.Client
+	ctx      = context.Background()
+	sid      *shortid.Shortid
+)
 
 func timesReceivedNullification() {
 	log.WithFields(log.Fields{
 		"function": "timesReceivedNullification",
 	}).Infoln("Running a TimesReceived nullification cronjob")
+
 	_, err := db.User.Update().Where(user.Paid(false)).SetCounter(0).Save(ctx)
+
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "timesReceivedNullification",
@@ -43,7 +50,9 @@ func letterNullification() {
 	log.WithFields(log.Fields{
 		"function": "letterNullification",
 	}).Infoln("Running a letter nullification cronjob")
+
 	_, err := db.Letter.Delete().Where(letter.CreatedAtLT(time.Now().AddDate(0, 0, -3))).Exec(ctx)
+
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "letterNullification",
@@ -52,12 +61,12 @@ func letterNullification() {
 	}
 }
 
-func cronjobs() {
+func cronJobInit() {
 	s := cron.NewScheduler(time.UTC)
 	if _, err := s.Every(1).Day().At("00:00").Do(timesReceivedNullification); err != nil {
 		log.WithFields(log.Fields{
 			"fatal":    true,
-			"function": "cronjobs",
+			"function": "cronJobInit",
 			"error":    err,
 		}).Fatalln("timesReceivedNullification CronJob failed to initialise")
 	}
@@ -65,7 +74,7 @@ func cronjobs() {
 	if _, err := s.Every(3).Days().At("00:00").Do(letterNullification); err != nil {
 		log.WithFields(log.Fields{
 			"fatal":    true,
-			"function": "cronjobs",
+			"function": "cronJobInit",
 			"error":    err,
 		}).Fatalln("letterNullification CronJob failed to initialise")
 	}
@@ -83,6 +92,7 @@ func checkV2Auth(next framework.HandlerFunc) framework.HandlerFunc {
 		}
 
 		c.Set("connectorID", id)
+
 		return next(c)
 	}
 }
@@ -105,12 +115,25 @@ func init() {
 	if len(osSecret) == 0 || len(osDB) == 0 {
 		log.WithFields(log.Fields{
 			"function": "init",
-		}).Fatalln("Program failed to initialise. Required environment variables not found: `SECRET_KEY`, `DATABASE_URL`")
+		}).Fatalln(
+			"Program failed to initialise. Required environment variables not found: `SECRET_KEY`, `DATABASE_URL`",
+		)
 	}
 
 	db = Open(osDB)
 
 	req = request.C()
+
+	var seed uint64 = 48292
+	genSid, err := shortid.New(1, shortid.DefaultABC, seed)
+
+	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "init(shortid.New)",
+		}).Fatal(err)
+	}
+
+	sid = genSid
 
 	if err := db.Schema.Create(ctx); err != nil {
 		log.WithFields(log.Fields{
@@ -122,6 +145,7 @@ func init() {
 	if len(osPort) == 0 {
 		osPort = "8080"
 	}
+
 	if len(osDomain) == 0 {
 		osDomain = "example.com"
 	}
@@ -130,9 +154,11 @@ func init() {
 func main() {
 	e := framework.New()
 	e.HideBanner = true
-	fmt.Println("Server v2.0.0: Helium\nProduction-ready clients: https://github.com/AtomicEmails/clients/tree/v2.0.0-helium")
 
-	cronjobs()
+	log.Println("Server v2.0.0: Helium")
+	log.Println("Production-ready clients: https://github.com/AtomicEmails/clients/tree/v2.0.0-helium")
+
+	cronJobInit()
 
 	e.Use(
 		middleware.Gzip(),
@@ -157,7 +183,7 @@ func main() {
 
 	system.Use(checkSystemAuth)
 
-	system.POST("/parse", ParseAndSend)
+	system.POST("/parse", parseAndSync)
 	system.POST("/announcement", sendAnnouncement)
 	system.POST("/create/connector", createConnector)
 
@@ -181,10 +207,13 @@ func main() {
 	}(db)
 
 	quit := make(chan os.Signal, 1)
+
 	signal.Notify(quit, os.Interrupt)
 	<-quit
+
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+
 	if err := e.Shutdown(ctx); err != nil {
 		log.Fatal(err)
 	}

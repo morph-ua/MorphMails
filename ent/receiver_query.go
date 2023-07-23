@@ -331,6 +331,18 @@ func (rq *ReceiverQuery) WithConnector(opts ...func(*ConnectorQuery)) *ReceiverQ
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Receiver.Query().
+//		GroupBy(receiver.FieldCreatedAt).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (rq *ReceiverQuery) GroupBy(field string, fields ...string) *ReceiverGroupBy {
 	rq.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &ReceiverGroupBy{build: rq}
@@ -342,6 +354,16 @@ func (rq *ReceiverQuery) GroupBy(field string, fields ...string) *ReceiverGroupB
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		CreatedAt time.Time `json:"created_at,omitempty"`
+//	}
+//
+//	client.Receiver.Query().
+//		Select(receiver.FieldCreatedAt).
+//		Scan(ctx, &v)
 func (rq *ReceiverQuery) Select(fields ...string) *ReceiverSelect {
 	rq.ctx.Fields = append(rq.ctx.Fields, fields...)
 	sbuild := &ReceiverSelect{ReceiverQuery: rq}

@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"time"
 )
 
 // User holds the schema definition for the User entity.
@@ -37,6 +38,10 @@ func (User) Fields() []ent.Field {
 			Default(false),
 		field.Int8("counter").
 			Default(0),
+		field.Time("created_at").
+			Default(time.Now).
+			Immutable().
+			Optional(),
 	}
 }
 

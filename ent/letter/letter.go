@@ -50,7 +50,7 @@ var (
 	// ToValidator is a validator for the "to" field. It is called by the builders before save.
 	ToValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt time.Time
+	DefaultCreatedAt func() time.Time
 )
 
 // OrderOption defines the ordering options for the Letter queries.

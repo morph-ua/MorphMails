@@ -14,6 +14,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "url", Type: field.TypeString, Unique: true},
 		{Name: "secret", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 	}
 	// ConnectorsTable holds the schema information for the "connectors" table.
 	ConnectorsTable = &schema.Table{
@@ -38,6 +39,7 @@ var (
 	// ReceiversColumns holds the columns for the "receivers" table.
 	ReceiversColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 		{Name: "connector_receivers", Type: field.TypeString},
 		{Name: "user_receivers", Type: field.TypeUUID},
 	}
@@ -49,13 +51,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "receivers_connectors_receivers",
-				Columns:    []*schema.Column{ReceiversColumns[1]},
+				Columns:    []*schema.Column{ReceiversColumns[2]},
 				RefColumns: []*schema.Column{ConnectorsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "receivers_users_receivers",
-				Columns:    []*schema.Column{ReceiversColumns[2]},
+				Columns:    []*schema.Column{ReceiversColumns[3]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -68,6 +70,7 @@ var (
 		{Name: "forward", Type: field.TypeBool, Default: true},
 		{Name: "paid", Type: field.TypeBool, Default: false},
 		{Name: "counter", Type: field.TypeInt8, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{

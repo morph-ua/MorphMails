@@ -31,11 +31,9 @@ func (Letter) Fields() []ent.Field {
 				_, err := mail.ParseAddress(s)
 				return err
 			}),
-		field.
-			Time("created_at").
-			Default(time.Now()).
-			Immutable().
-			Comment("Save time to delete after 3 days"),
+		field.Time("created_at").
+			Default(time.Now).
+			Immutable(),
 	}
 }
 

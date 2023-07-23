@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"helium/ent/user"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -26,6 +27,8 @@ type User struct {
 	Paid bool `json:"paid,omitempty"`
 	// Counter holds the value of the "counter" field.
 	Counter int8 `json:"counter,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"-"`
@@ -61,6 +64,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldCounter:
 			values[i] = new(sql.NullInt64)
+		case user.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -109,6 +114,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field counter", values[i])
 			} else if value.Valid {
 				u.Counter = int8(value.Int64)
+			}
+		case user.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				u.CreatedAt = value.Time
 			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
@@ -162,6 +173,9 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("counter=")
 	builder.WriteString(fmt.Sprintf("%v", u.Counter))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
