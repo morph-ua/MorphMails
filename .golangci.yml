@@ -19,8 +19,8 @@ linters:
     - bidichk
     - dupl
     - revive
-    - wsl
     - gocognit
+    - gofumpt
 
 linters-settings:
   revive:

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"helium/ent"
 	"net/http"
 
 	"entgo.io/ent/dialect"
@@ -9,7 +10,6 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
-	"helium/ent"
 )
 
 func StatusReport(ctx echo.Context, c int) error {

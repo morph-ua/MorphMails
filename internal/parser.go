@@ -1,6 +1,8 @@
 package main
 
 import (
+	"helium/ent"
+	"helium/ent/user"
 	"net/http"
 	"regexp"
 	"strings"
@@ -10,8 +12,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
-	"helium/ent"
-	"helium/ent/user"
 )
 
 var rg = regexp.MustCompile(`(\r\n?|\n){2,}`)

@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"helium/ent"
+	"helium/ent/connector"
+	"helium/ent/letter"
+	"helium/ent/user"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,10 +18,6 @@ import (
 	framework "github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	log "github.com/sirupsen/logrus"
-	"helium/ent"
-	"helium/ent/connector"
-	"helium/ent/letter"
-	"helium/ent/user"
 )
 
 var (
@@ -37,7 +37,6 @@ func timesReceivedNullification() {
 	}).Infoln("Running a TimesReceived nullification cronjob")
 
 	_, err := db.User.Update().Where(user.Paid(false)).SetCounter(0).Save(ctx)
-
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "timesReceivedNullification",
@@ -52,7 +51,6 @@ func letterNullification() {
 	}).Infoln("Running a letter nullification cronjob")
 
 	_, err := db.Letter.Delete().Where(letter.CreatedAtLT(time.Now().AddDate(0, 0, -3))).Exec(ctx)
-
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "letterNullification",
@@ -126,7 +124,6 @@ func init() {
 
 	var seed uint64 = 48292
 	genSid, err := shortid.New(1, shortid.DefaultABC, seed)
-
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "init(shortid.New)",

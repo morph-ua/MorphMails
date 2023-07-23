@@ -1,11 +1,11 @@
 package main
 
 import (
+	"helium/ent"
 	"net/http"
 
 	framework "github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
-	"helium/ent"
 )
 
 func createConnector(context framework.Context) error {

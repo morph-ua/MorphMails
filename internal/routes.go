@@ -1,16 +1,16 @@
 package main
 
 import (
+	"helium/ent"
+	"helium/ent/connector"
+	"helium/ent/receiver"
+	"helium/ent/user"
 	"net/http"
 
 	"github.com/google/uuid"
 	framework "github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
-	"helium/ent"
-	"helium/ent/connector"
-	"helium/ent/receiver"
-	"helium/ent/user"
 )
 
 func connectAccount(c framework.Context) error {
@@ -23,7 +23,6 @@ func connectAccount(c framework.Context) error {
 
 	connectorID := c.Get("connectorID").(string)
 	parsedUUID, err := uuid.Parse(uniqueID)
-
 	if err != nil {
 		return StatusReport(c, http.StatusBadRequest)
 	}
