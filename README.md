@@ -21,11 +21,6 @@ Atomic Emails is a free and open-source project. You can host it on your own ser
 You can create a temporary email address by using the `/v2/assign` route or equivalent in your desired client. The service will generate a random email address for you and forward all
 incoming emails to your client.
 
-### Persistent email address
-One persistent email address is created for each ID (Unique chat identification number in your client).
-You can use this email address to receive emails from friends and family instead of using your main email address.
-The service will parse and forward all incoming emails to your client.
-
 ### Connect your own domain
 You can connect your own domain to the service by placing it on your own hosting to prevent the service from being blocked
 by some websites. To do that, you need to install the service on your own machine and
