@@ -1,8 +1,8 @@
 <p align="center">
-  <a href="https://www.decline.live/" rel="noopener" target="_blank"><img width="150" src="/docs/public/logo.svg" alt="Atomic Emails Logo"></a>
+  <a href="https://www.decline.live/" rel="noopener" target="_blank"><img width="300" src="/docs/public/logo.svg" alt="Atomic Emails Logo"></a>
 </p>
 
-<h1 align="center">⚛️📧 Atomic Emails</h1>
+<hr/>
 
 **Atomic Emails** is an open-source temporary email service that relies on [**Mailgun**](https://mailgun.com) and can integrate with _**any possible client**_.
 
