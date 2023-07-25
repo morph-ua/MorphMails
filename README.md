@@ -48,7 +48,7 @@ docker run \
 * Next steps from [**Network Setup**](#network-setup) section.
 
 #### Using Pre-built Binaries
-  
+
 * Install the [**latest version**](https://github.com/AtomicEmails/AtomicEmails/releases/latest) of Atomic Emails binary for your OS and Architecture
 * Unpack the tarball
 * Open your Linux **Terminal** and run the following command:
