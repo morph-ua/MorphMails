@@ -4,7 +4,6 @@ import (
 	"helium/ent"
 	"helium/ent/user"
 	"net/http"
-	"regexp"
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
@@ -14,20 +13,27 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var rg = regexp.MustCompile(`(\r\n?|\n){2,}`)
+func convert(html string) string {
+	md, err := converter.ConvertString(html)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "convert",
+		}).Error(err)
+		return "❌ **Failed to parse Markdown from Letter**"
+	}
+
+	return md
+}
 
 func unwrapDefaults(c echo.Context) unwrappedDefaults {
 	recipients := strings.Split(c.FormValue("recipient"), ",")
 	from := c.FormValue("from")
 	subject := c.FormValue("subject")
 	html := c.FormValue("stripped-html")
-	text := rg.ReplaceAllString(c.FormValue("stripped-text"), "$1")
 
 	switch {
 	case len(subject) == 0:
 		subject = "[No Subject]"
-	case len(text) == 0:
-		text = "[No Body]"
 	case len(html) == 0:
 		html = "[No Body]"
 	}
@@ -37,7 +43,7 @@ func unwrapDefaults(c echo.Context) unwrappedDefaults {
 		From:       from,
 		Subject:    subject,
 		HTML:       html,
-		Text:       text,
+		Text:       convert(html),
 	}
 }
 

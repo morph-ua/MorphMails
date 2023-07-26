@@ -11,6 +11,9 @@ import (
 	"os/signal"
 	"time"
 
+	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/PuerkitoBio/goquery"
+
 	"github.com/teris-io/shortid"
 
 	cron "github.com/go-co-op/gocron"
@@ -21,15 +24,31 @@ import (
 )
 
 var (
-	osSecret = os.Getenv("SECRET_KEY")
-	osDB     = os.Getenv("DATABASE_URL")
-	osPort   = os.Getenv("PORT")
-	osDomain = os.Getenv("DOMAIN")
-	db       *ent.Client
-	req      *request.Client
-	ctx      = context.Background()
-	sid      *shortid.Shortid
+	osSecret  = os.Getenv("SECRET_KEY")
+	osDB      = os.Getenv("DATABASE_URL")
+	osPort    = os.Getenv("PORT")
+	osDomain  = os.Getenv("DOMAIN")
+	db        *ent.Client
+	req       *request.Client
+	ctx       = context.Background()
+	sid       *shortid.Shortid
+	converter *md.Converter
 )
+
+func noMiscRenderPlugin() md.Plugin {
+	return func(c *md.Converter) []md.Rule {
+		return []md.Rule{
+			{
+				Filter: []string{"img", "svg", "script"},
+				Replacement: func(content string, selec *goquery.Selection, opt *md.Options) *string {
+					content = ""
+
+					return &content
+				},
+			},
+		}
+	}
+}
 
 func timesReceivedNullification() {
 	log.WithFields(log.Fields{
@@ -121,6 +140,9 @@ func init() {
 	db = Open(osDB)
 
 	req = request.C()
+
+	converter = md.NewConverter("", true, nil)
+	converter.Use(noMiscRenderPlugin())
 
 	var seed uint64 = 48292
 	genSid, err := shortid.New(1, shortid.DefaultABC, seed)

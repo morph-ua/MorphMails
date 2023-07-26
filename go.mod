@@ -18,7 +18,10 @@ require (
 
 require (
 	ariga.io/atlas v0.10.2-0.20230427182402-87a07dfb83bf // indirect
+	github.com/JohannesKaufmann/html-to-markdown v1.4.0 // indirect
+	github.com/PuerkitoBio/goquery v1.8.1 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
+	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
@@ -57,5 +60,6 @@ require (
 	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.9.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/mysql v1.4.7 // indirect
 )
