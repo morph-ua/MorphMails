@@ -1,6 +1,8 @@
 package main
 
 import (
+	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/PuerkitoBio/goquery"
 	"helium/ent"
 	"helium/ent/user"
 	"net/http"
@@ -13,8 +15,26 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func noMiscRenderPlugin() md.Plugin {
+	return func(c *md.Converter) []md.Rule {
+		return []md.Rule{
+			{
+				Filter: []string{"img", "svg", "script"},
+				Replacement: func(content string, selec *goquery.Selection, opt *md.Options) *string {
+					content = ""
+
+					return &content
+				},
+			},
+		}
+	}
+}
+
 func convert(html string) string {
-	md, err := converter.ConvertString(html)
+	converter := md.NewConverter("", true, nil)
+	converter.Use(noMiscRenderPlugin())
+
+	markdown, err := converter.ConvertString(html)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "convert",
@@ -22,7 +42,7 @@ func convert(html string) string {
 		return "❌ **Failed to parse Markdown from Letter**"
 	}
 
-	return md
+	return markdown
 }
 
 func unwrapDefaults(c echo.Context) unwrappedDefaults {
