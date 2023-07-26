@@ -11,7 +11,7 @@ type (
 		From    string `json:"from,omitempty"`
 		To      string `json:"to,omitempty"`
 		Text    string `json:"text,omitempty"`
-		Subject string `json:"Subject,omitempty"`
+		Subject string `json:"subject,omitempty"`
 	}
 	unwrappedDefaults struct {
 		Recipients []string `json:"recipients,omitempty"`

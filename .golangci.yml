@@ -21,6 +21,7 @@ linters:
     - revive
     - gocognit
     - gofumpt
+    - gosec
 
 linters-settings:
   revive:

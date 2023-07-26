@@ -69,7 +69,7 @@ func cronJobInit() {
 		}).Fatalln("timesReceivedNullification CronJob failed to initialise")
 	}
 
-	if _, err := s.Every(3).Days().At("00:00").Do(letterNullification); err != nil {
+	if _, err := s.Every(15).Minutes().Do(letterNullification); err != nil {
 		log.WithFields(log.Fields{
 			"fatal":    true,
 			"function": "cronJobInit",
