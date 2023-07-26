@@ -12,7 +12,7 @@
 
 <div align="center">
 
-**[`v2.0.1-h2o`](https://github.com/AtomicEmails/AtomicEmails/releases/latest/)**
+**[`v2.0.2-co2`](https://github.com/AtomicEmails/AtomicEmails/releases/latest/)**
 
 [![Latest Tag](https://ghcr-badge.egpl.dev/AtomicEmails/app/latest_tag?color=red&label=latest)](https://ghcr.io/AtomicEmails/app "Latest Tag")
 [![Image Size](https://ghcr-badge.egpl.dev/AtomicEmails/app/size)](https://ghcr.io/AtomicEmails/app "Image Size")
