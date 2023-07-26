@@ -14,8 +14,8 @@
 
 **[`v2.0.1-h2o`](https://github.com/AtomicEmails/AtomicEmails/releases/latest/)**
 
-[![Latest Tag](https://ghcr-badge.egpl.dev/AtomicEmails/app/latest_tag?color=red&label=latest)](https://ghrc.io/AtomicEmails/app "Latest Tag")
-[![Image Size](https://ghcr-badge.egpl.dev/AtomicEmails/app/size)](https://ghrc.io/AtomicEmails/app "Image Size")
+[![Latest Tag](https://ghcr-badge.egpl.dev/AtomicEmails/app/latest_tag?color=red&label=latest)](https://ghcr.io/AtomicEmails/app "Latest Tag")
+[![Image Size](https://ghcr-badge.egpl.dev/AtomicEmails/app/size)](https://ghcr.io/AtomicEmails/app "Image Size")
 ![license](https://img.shields.io/github/license/AtomicEmails/AtomicEmails)
 [![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/AtomicEmails/AtomicEmails.svg)](https://isitmaintained.com/project/AtomicEmails/AtomicEmails 'Average time to resolve an issue')
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/AtomicEmails/AtomicEmails.svg)](http://isitmaintained.com/project/AtomicEmails/AtomicEmails "Percentage of issues still open")
