@@ -19,6 +19,7 @@ type (
 		Subject    string   `json:"subject,omitempty"`
 		HTML       string   `json:"html,omitempty"`
 		Text       string   `json:"text,omitempty"`
+		ATC        int      `json:"atc,omitempty"`
 	}
 )
 

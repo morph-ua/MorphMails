@@ -14,7 +14,6 @@ import (
 
 func uploadFiles(c framework.Context) []string {
 	form, _ := c.MultipartForm()
-
 	var links []string
 
 	for _, files := range form.File {

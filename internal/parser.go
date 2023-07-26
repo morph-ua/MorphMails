@@ -1,12 +1,14 @@
 package main
 
 import (
-	md "github.com/JohannesKaufmann/html-to-markdown"
-	"github.com/PuerkitoBio/goquery"
 	"helium/ent"
 	"helium/ent/user"
 	"net/http"
+	"strconv"
 	"strings"
+
+	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/PuerkitoBio/goquery"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
@@ -50,6 +52,8 @@ func unwrapDefaults(c echo.Context) unwrappedDefaults {
 	from := c.FormValue("from")
 	subject := c.FormValue("subject")
 	html := c.FormValue("stripped-html")
+	text := convert(html)
+	atc, _ := strconv.Atoi(c.FormValue("attachment-count"))
 
 	switch {
 	case len(subject) == 0:
@@ -63,7 +67,8 @@ func unwrapDefaults(c echo.Context) unwrappedDefaults {
 		From:       from,
 		Subject:    subject,
 		HTML:       html,
-		Text:       convert(html),
+		Text:       text,
+		ATC:        atc,
 	}
 }
 
@@ -84,6 +89,8 @@ func parseAndSync(c echo.Context) error {
 			}).
 			First(ctx)
 
+		log.Println(firstUser, firstUser.Edges.Receivers)
+
 		if ent.IsNotFound(err) {
 			continue
 		} else if err != nil {
@@ -94,6 +101,13 @@ func parseAndSync(c echo.Context) error {
 		}
 
 		if firstUser.Forward {
+			var files []string
+			if values.ATC == 0 {
+				files = []string{}
+			} else {
+				files = uploadFiles(c)
+			}
+
 			go syncConnectors(
 				result{
 					Message: message{
@@ -104,7 +118,7 @@ func parseAndSync(c echo.Context) error {
 					},
 					RenderedURI: "https://www.decline.live/preview/" +
 						uploadHTML(values.HTML, values.From, recipient),
-					Files: uploadFiles(c),
+					Files: files,
 				},
 				firstUser.Edges.Receivers,
 			)
