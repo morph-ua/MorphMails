@@ -32,10 +32,6 @@ var (
 )
 
 func timesReceivedNullification() {
-	log.WithFields(log.Fields{
-		"function": "timesReceivedNullification",
-	}).Infoln("Running a TimesReceived nullification cronjob")
-
 	_, err := db.User.Update().Where(user.Paid(false)).SetCounter(0).Save(ctx)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -46,10 +42,6 @@ func timesReceivedNullification() {
 }
 
 func letterNullification() {
-	log.WithFields(log.Fields{
-		"function": "letterNullification",
-	}).Infoln("Running a letter nullification cronjob")
-
 	_, err := db.Letter.Delete().Where(letter.CreatedAtLT(time.Now().AddDate(0, 0, -3))).Exec(ctx)
 	if err != nil {
 		log.WithFields(log.Fields{
