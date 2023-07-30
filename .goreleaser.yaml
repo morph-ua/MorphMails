@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
 
-project_name: helium
+project_name: morph_mails
 before:
   hooks:
     - go mod tidy
@@ -9,7 +9,7 @@ builds:
   - env:
       - CGO_ENABLED=0
     main: ./internal
-    binary: helium
+    binary: morph_mails
     goos:
       - windows
       - darwin
@@ -65,13 +65,13 @@ changelog:
 
 dockers:
   - image_templates:
-      - "ghcr.io/atomicemails/app:latest"
-      - "ghcr.io/atomicemails/app:{{ .Tag }}-amd64"
+      - "ghcr.io/morph-ua/mails:latest"
+      - "ghcr.io/morph-ua/mails:{{ .Tag }}-amd64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
       - "--pull"
-      - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/AtomicEmails/AtomicEmails/main/README.md"
+      - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/morph-ua/MorphMails/main/README.md"
       - '--label=io.artifacthub.package.maintainers=[{"name":"Saputskyi Petro","email":"hello@lowt.live"}]'
       - "--label=io.artifacthub.package.license=MIT"
       - "--label=org.opencontainers.image.description=Temporary email wherever you need it."
@@ -82,12 +82,12 @@ dockers:
       - "--label=org.opencontainers.image.source={{.GitURL}}"
       - "--platform=linux/amd64"
   - image_templates:
-      - "ghcr.io/atomicemails/app:{{ .Tag }}-arm64"
+      - "ghcr.io/morph-ua/mails:{{ .Tag }}-arm64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
       - "--pull"
-      - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/AtomicEmails/AtomicEmails/main/README.md"
+      - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/morph-ua/MorphMails/main/README.md"
       - '--label=io.artifacthub.package.maintainers=[{"name":"Saputskyi Petro","email":"hello@lowt.live"}]'
       - "--label=io.artifacthub.package.license=MIT"
       - "--label=org.opencontainers.image.description=Temporary email wherever you need it."

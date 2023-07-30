@@ -53,7 +53,7 @@ func unwrapDefaults(c echo.Context) unwrappedDefaults {
 	subject := c.FormValue("subject")
 	html := c.FormValue("stripped-html")
 	text := convert(html)
-	atc_str := c.FormValue("attachment-count")
+	atcStr := c.FormValue("attachment-count")
 	switch {
 	case len(subject) == 0:
 		subject = "[No Subject]"

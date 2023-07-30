@@ -145,7 +145,7 @@ func main() {
 	e.HideBanner = true
 
 	log.Println("Server v2.0.0: Helium")
-	log.Println("Production-ready clients: https://github.com/AtomicEmails/clients/tree/v2.0.0-helium")
+	log.Println("Production-ready clients: https://github.com/morph-ua/MailClients/")
 
 	cronJobInit()
 

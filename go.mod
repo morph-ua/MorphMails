@@ -1,4 +1,4 @@
-module helium
+module morph_mails
 
 go 1.20
 

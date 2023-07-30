@@ -83,7 +83,7 @@ func getRaw(c framework.Context) error {
 		return c.JSON(http.StatusNotFound, map[string]any{
 			"id": id,
 			"html": "<html><head><title>404 Not Found</title></head>" +
-				"<body><center><h1>404 Not Found</h1><hr>Atomic Emails</center></body>",
+				"<body><center><h1>404 Not Found</h1><hr>Morph Mails</center></body>",
 			"from": "entity_not_found@" + osDomain,
 			"to":   "entity_not_found@" + osDomain,
 		})
@@ -103,7 +103,7 @@ func getHTML(c framework.Context) error {
 
 	if ent.IsNotFound(err) {
 		return c.HTML(http.StatusNotFound, "<html><head><title>404 Not Found</title></head>"+
-			"<body><center><h1>404 Not Found</h1><hr>Atomic Emails</center></body>")
+			"<body><center><h1>404 Not Found</h1><hr>Morph Mails</center></body>")
 	}
 
 	if err != nil {

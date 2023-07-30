@@ -1,3 +1,3 @@
 FROM scratch
-COPY helium /bin/server
+COPY morph_mails /bin/server
 ENTRYPOINT ["server"]
