@@ -10,8 +10,8 @@
 
 **[`v2.0.2-co2`](https://github.com/morph-ua/MorphMails/releases/latest/)**
 
-[![Latest Tag](https://ghcr-badge.egpl.dev/morph-ua/app/latest_tag?color=red&label=latest)](https://ghcr.io/MorphMails/app "Latest Tag")
-[![Image Size](https://ghcr-badge.egpl.dev/morph-ua/app/size)](https://ghcr.io/morph-ua/app "Image Size")
+[![Latest Tag](https://ghcr-badge.egpl.dev/morph-ua/mails/latest_tag?color=red&label=latest)](https://ghcr.io/MorphMails/mails "Latest Tag")
+[![Image Size](https://ghcr-badge.egpl.dev/morph-ua/mails/size)](https://ghcr.io/morph-ua/mails "Image Size")
 ![license](https://img.shields.io/github/license/morph-ua/MorphMails)
 [![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/morph-ua/MorphMails.svg)](https://isitmaintained.com/project/morph-ua/MorphMails 'Average time to resolve an issue')
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/morph-ua/MorphMails.svg)](http://isitmaintained.com/project/morph-ua/MorphMails "Percentage of issues still open")

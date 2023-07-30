@@ -59,11 +59,11 @@ func unwrapDefaults(c echo.Context) unwrappedDefaults {
 		subject = "[No Subject]"
 	case len(html) == 0:
 		html = "[No Body]"
-	case len(atc_str) == 0:
-		atc_str = "0"
+	case len(atcStr) == 0:
+		atcStr = "0"
 	}
 
-	atc, _ := strconv.Atoi(atc_str)
+	atc, _ := strconv.Atoi(atcStr)
 
 	return unwrappedDefaults{
 		Recipients: recipients,
