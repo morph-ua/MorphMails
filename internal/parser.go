@@ -1,8 +1,8 @@
 package main
 
 import (
-	"helium/ent"
-	"helium/ent/user"
+	"morph_mails/ent"
+	"morph_mails/ent/user"
 	"net/http"
 	"strconv"
 	"strings"

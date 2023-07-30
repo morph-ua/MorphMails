@@ -5,7 +5,7 @@ package ent
 import (
 	"encoding/json"
 	"fmt"
-	"helium/ent/user"
+	"morph_mails/ent/user"
 	"strings"
 	"time"
 

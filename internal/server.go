@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"helium/ent"
-	"helium/ent/connector"
-	"helium/ent/letter"
-	"helium/ent/user"
+	"morph_mails/ent"
+	"morph_mails/ent/connector"
+	"morph_mails/ent/letter"
+	"morph_mails/ent/user"
 	"net/http"
 	"os"
 	"os/signal"
@@ -144,7 +144,7 @@ func main() {
 	e := framework.New()
 	e.HideBanner = true
 
-	log.Println("Server v2.0.0: Helium")
+	log.Println("Server v2.0.0: morph-ua/MorphMails")
 	log.Println("Production-ready clients: https://github.com/morph-ua/MailClients/")
 
 	cronJobInit()

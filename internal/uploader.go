@@ -2,8 +2,8 @@ package main
 
 import (
 	"bytes"
-	"helium/ent"
-	"helium/ent/letter"
+	"morph_mails/ent"
+	"morph_mails/ent/letter"
 	"io"
 	"mime/multipart"
 	"net/http"

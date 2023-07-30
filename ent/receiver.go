@@ -4,9 +4,9 @@ package ent
 
 import (
 	"fmt"
-	"helium/ent/connector"
-	"helium/ent/receiver"
-	"helium/ent/user"
+	"morph_mails/ent/connector"
+	"morph_mails/ent/receiver"
+	"morph_mails/ent/user"
 	"strings"
 	"time"
 

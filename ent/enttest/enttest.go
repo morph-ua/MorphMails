@@ -4,11 +4,11 @@ package enttest
 
 import (
 	"context"
-	"helium/ent"
+	"morph_mails/ent"
 	// required by schema hooks.
-	_ "helium/ent/runtime"
+	_ "morph_mails/ent/runtime"
 
-	"helium/ent/migrate"
+	"morph_mails/ent/migrate"
 
 	"entgo.io/ent/dialect/sql/schema"
 )

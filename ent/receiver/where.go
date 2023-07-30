@@ -3,7 +3,7 @@
 package receiver
 
 import (
-	"helium/ent/predicate"
+	"morph_mails/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"

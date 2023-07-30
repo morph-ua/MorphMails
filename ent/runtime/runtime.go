@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in helium/ent/runtime.go
+// The schema-stitching logic is generated in morph_mails/ent/runtime.go
 
 const (
 	Version = "v0.12.3"                                         // Version of ent codegen.

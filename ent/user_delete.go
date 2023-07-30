@@ -4,8 +4,8 @@ package ent
 
 import (
 	"context"
-	"helium/ent/predicate"
-	"helium/ent/user"
+	"morph_mails/ent/predicate"
+	"morph_mails/ent/user"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

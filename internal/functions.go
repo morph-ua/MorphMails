@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"helium/ent"
+	"morph_mails/ent"
 	"net/http"
 
 	"entgo.io/ent/dialect"

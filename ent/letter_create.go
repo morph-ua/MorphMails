@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"helium/ent/letter"
+	"morph_mails/ent/letter"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"

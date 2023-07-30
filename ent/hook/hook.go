@@ -5,7 +5,7 @@ package hook
 import (
 	"context"
 	"fmt"
-	"helium/ent"
+	"morph_mails/ent"
 )
 
 // The ConnectorFunc type is an adapter to allow the use of ordinary

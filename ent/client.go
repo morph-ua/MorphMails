@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"log"
 
-	"helium/ent/migrate"
+	"morph_mails/ent/migrate"
 
-	"helium/ent/connector"
-	"helium/ent/letter"
-	"helium/ent/receiver"
-	"helium/ent/user"
+	"morph_mails/ent/connector"
+	"morph_mails/ent/letter"
+	"morph_mails/ent/receiver"
+	"morph_mails/ent/user"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"

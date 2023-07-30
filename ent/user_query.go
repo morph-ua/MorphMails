@@ -6,10 +6,10 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
-	"helium/ent/predicate"
-	"helium/ent/receiver"
-	"helium/ent/user"
 	"math"
+	"morph_mails/ent/predicate"
+	"morph_mails/ent/receiver"
+	"morph_mails/ent/user"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

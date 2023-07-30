@@ -3,11 +3,11 @@
 package ent
 
 import (
-	"helium/ent/connector"
-	"helium/ent/letter"
-	"helium/ent/receiver"
-	"helium/ent/schema"
-	"helium/ent/user"
+	"morph_mails/ent/connector"
+	"morph_mails/ent/letter"
+	"morph_mails/ent/receiver"
+	"morph_mails/ent/schema"
+	"morph_mails/ent/user"
 	"time"
 
 	"github.com/google/uuid"

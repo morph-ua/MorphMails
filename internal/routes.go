@@ -1,10 +1,10 @@
 package main
 
 import (
-	"helium/ent"
-	"helium/ent/connector"
-	"helium/ent/receiver"
-	"helium/ent/user"
+	"morph_mails/ent"
+	"morph_mails/ent/connector"
+	"morph_mails/ent/receiver"
+	"morph_mails/ent/user"
 	"net/http"
 
 	"github.com/google/uuid"

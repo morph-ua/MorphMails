@@ -1,7 +1,7 @@
 package main
 
 import (
-	"helium/ent"
+	"morph_mails/ent"
 	"net/http"
 
 	framework "github.com/labstack/echo/v4"

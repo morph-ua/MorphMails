@@ -4,7 +4,7 @@ package ent
 
 import (
 	"fmt"
-	"helium/ent/letter"
+	"morph_mails/ent/letter"
 	"strings"
 	"time"
 
