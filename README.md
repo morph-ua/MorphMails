@@ -8,7 +8,7 @@
 
 <div align="center">
 
-**[`v2.0.2-co2`](https://github.com/morph-ua/MorphMails/releases/latest/)**
+**[`v1.5.0`](https://github.com/morph-ua/MorphMails/releases/latest/)**
 
 [![Latest Tag](https://ghcr-badge.egpl.dev/morph-ua/mails/latest_tag?color=red&label=latest)](https://ghcr.io/MorphMails/mails "Latest Tag")
 [![Image Size](https://ghcr-badge.egpl.dev/morph-ua/mails/size)](https://ghcr.io/morph-ua/mails "Image Size")
@@ -35,7 +35,7 @@
 docker run \
   -e DATABASE_URL=<your_db_dsn> \
   -e SECRET_KEY=<secret> \
-  -p 8080:8080 -d ghcr.io/morph-ua/mails:v2.0.2-co2-amd64 
+  -p 8080:8080 -d ghcr.io/morph-ua/mails:v1.5.0-amd64 
 ```
 > 📝 **Note**: You can generate the secret using this shell command:
 > ```shell
